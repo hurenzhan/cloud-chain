@@ -4,23 +4,26 @@
     <router-link to="/about">About</router-link> |
     <router-link to="/aboutTest">aboutTest</router-link>
   </div>
-  <keep-alive>
-    <router-view v-slot="{ Component }" v-if="routerConfig.meta.keepAlive">
-      <keep-alive>
-        <component :is="Component" />
-      </keep-alive>
-    </router-view>
-  </keep-alive>
-  <router-view v-if="!routerConfig.meta.keepAlive" />
+  <router-view #="{ Component }">
+    <keep-alive>
+      <component v-if="routerConfig.meta.keepAlive" :is="Component" />
+    </keep-alive>
+    <component v-if="!routerConfig.meta.keepAlive" :is="Component" />
+  </router-view>
   {{ routerConfig.meta }}
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, RouteLocationNormalizedLoaded } from "vue-router";
+
+interface State {
+  routerConfig: RouteLocationNormalizedLoaded;
+}
+
 export default defineComponent({
   setup(props, context) {
-    const state = reactive({
+    const state = reactive<State>({
       routerConfig: useRoute(),
     });
     return {

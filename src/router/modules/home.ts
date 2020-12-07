@@ -7,7 +7,7 @@ const AboutTest: Component = () => import(/* webpackChunkName: "about" */ '@/vie
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        name: 'Home',
+        name: 'home',
         component: Home,
     },
     {
@@ -20,9 +20,10 @@ const routes: Array<RouteRecordRaw> = [
         name: 'aboutTest',
         component: AboutTest,
         meta: {
-            keepAlive: false
+            keepAlive: true
         },
         beforeEnter: (to, { name }, next) => {
+            to.meta.keepAlive = true
             if (name === 'home') {
                 to.meta.keepAlive = false
             }
