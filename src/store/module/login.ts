@@ -15,10 +15,13 @@ import { getToken } from '@/libs/util'
 
 interface InitState {
   token: string;
+  loginTest: string;
+  [propName: string]: any;
 }
 
 const defaultState: InitState = {
   token: getToken() || '666',
+  loginTest: 'loginTest',
 }
 
 export default {
@@ -26,19 +29,24 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitState, payload: RecordType) {
-      state = {
-        ...state,
-        ...payload
-      }
+      console.log(payload, 'payload')
+      // for (const key in payload) {
+      //   state[key] = payload[key]
+      // }
+      state.token = '33336669999'
     },
   },
   getters: {
+    loginTestGetters: (state: InitState) => {
+      console.log(state, 'loginTestGetters');
+
+      return 1
+    },
   },
   actions: {
     // 登录
     handleLogin<S, R>({ commit, state }: ActionContext<S, R>, loginInfo: any) {
-      console.log(state, 'state');
-      
+      console.log(loginInfo, 'handleLogin');
       // return new Promise((resolve, reject) => {
       //   login({
       //     ...loginInfo

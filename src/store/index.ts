@@ -6,6 +6,9 @@ export default createStore({
     test: 'test'
   },
   mutations: {
+    trrr(state) {
+      state.test = '423432'
+    }
   },
   actions: {
     handleLogin() {
