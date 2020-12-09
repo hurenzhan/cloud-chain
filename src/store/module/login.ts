@@ -30,17 +30,16 @@ export default {
   mutations: {
     save(state: InitState, payload: RecordType) {
       console.log(payload, 'payload')
-      // for (const key in payload) {
-      //   state[key] = payload[key]
-      // }
-      state.token = '33336669999'
+      for (const key in payload) {
+        state[key] = payload[key]
+      }
     },
   },
   getters: {
     loginTestGetters: (state: InitState) => {
-      console.log(state, 'loginTestGetters');
-
-      return 1
+      console.log(state.token);
+      
+      return state.token
     },
   },
   actions: {
