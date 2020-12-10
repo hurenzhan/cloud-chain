@@ -1,3 +1,5 @@
+import { RecordkeyType, RecordType } from '@/types/common'
+
 export const forEach = (arr: string | any[], fn: (arg0: any, arg1: number, arg2: any) => void) => {
   if (!arr.length || !fn) return
   let i = -1
@@ -68,8 +70,7 @@ export const off = (function () {
  * 判断一个对象是否存在key，如果传入第二个参数key，则是判断这个obj对象是否存在key这个属性
  * 如果没有传入key这个参数，则判断obj对象是否有键值对
  */
-type RecordkeyType = string | number | symbol
-export const hasKey = (obj: Record<RecordkeyType, any>, key: RecordkeyType) => {
+export const hasKey = (obj: RecordType, key: RecordkeyType) => {
   if (key) return key in obj
   else {
     const keysArr = Object.keys(obj)
@@ -82,11 +83,10 @@ export const hasKey = (obj: Record<RecordkeyType, any>, key: RecordkeyType) => {
  * @param {*} obj2 对象
  * @description 判断两个对象是否相等，这两个对象的值只能是数字或字符串
  */
-export const objEqual = (obj1: Record<RecordkeyType, any>, obj2: Record<RecordkeyType, any>) => {
+export const objEqual = (obj1: RecordType, obj2: RecordType) => {
   const keysArr1 = Object.keys(obj1)
   const keysArr2 = Object.keys(obj2)
   if (keysArr1.length !== keysArr2.length) return false
   else if (keysArr1.length === 0 && keysArr2.length === 0) return true
-  /* eslint-disable-next-line */
   else return !keysArr1.some(key => obj1[key] != obj2[key])
 }

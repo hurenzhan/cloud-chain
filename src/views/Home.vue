@@ -2,13 +2,12 @@
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png" />
     <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-    {{ token }}{{ loginTest }}{{ loginTestGetters }}
+    {{ token }}{{ loginTest }}{{ loginTestGetters }}{{ ttt }}
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, reactive, toRefs } from 'vue'
-import { useStore, createNamespacedHelpers } from 'vuex'
+import { defineComponent, reactive, toRefs } from 'vue'
 import HelloWorld from '@/components/HelloWorld.vue' // @ is an alias to /src
 import mapStore from '@/libs/mapStore.ts' // @ is an alias to /src
 // const {
@@ -47,7 +46,7 @@ export default defineComponent({
     const { save } = getMutations(['save'])
     const { loginTestGetters } = getGetters(['loginTestGetters'])
 
-    const { token, loginTest } = getState(['token', 'loginTest'])
+    const { token, loginTest, ttt } = getState(['token', 'loginTest', 'ttt'])
     // const { token, loginTest } = mapState(['token', 'loginTest'])
     // const { token, loginTest } = mapState(['token', 'loginTest'])
 
@@ -67,6 +66,7 @@ export default defineComponent({
       save({
         token: 1,
         loginTest: '1',
+        ttt: 666,
       })
       handleLogin({ token, loginTest })
     }, 2000)
@@ -75,6 +75,7 @@ export default defineComponent({
       token,
       loginTest,
       loginTestGetters,
+      ttt,
     })
     return {
       ...toRefs(state),

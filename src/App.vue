@@ -22,7 +22,7 @@ interface State {
 }
 
 export default defineComponent({
-  setup(props, context) {
+  setup() {
     const state = reactive<State>({
       routerConfig: useRoute(),
     });

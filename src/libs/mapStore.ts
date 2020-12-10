@@ -22,7 +22,6 @@ const mapStore = (namespaced: string) => {
             if (METHOD_COLLECTION.includes(type)) maps[key] = val.bind({ $store: store })
         }
         return maps
-
     }
 
     const getState = (map: string[]): RecordType => handlePerform(mapState(map), TYPES.STATE)
