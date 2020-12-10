@@ -10,6 +10,8 @@
 import { defineComponent, reactive, toRefs } from 'vue'
 import HelloWorld from '@/components/HelloWorld.vue' // @ is an alias to /src
 import mapStore from '@/libs/mapStore.ts' // @ is an alias to /src
+import { findDict } from '@/libs/util'
+import { TEST_DICT, TEST_TYPE } from '@/libs/dicts'
 // const {
 //   mapState,
 //   mapActions,
@@ -69,6 +71,10 @@ export default defineComponent({
         ttt: 666,
       })
       handleLogin({ token, loginTest })
+      console.log(
+        findDict(TEST_DICT, TEST_TYPE.ONE),
+        'findDict(TEST_DICT, TEST_TYPE.ONE)'
+      )
     }, 2000)
 
     const state = reactive({

@@ -1,4 +1,4 @@
-import { ActionContext, Module } from 'vuex'
+import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
 // import {
 //   getUserInfo
@@ -40,8 +40,8 @@ export default {
   },
   actions: {
     // 登录
-    handleLogin({ commit, state }, loginInfo: any) {
-      console.log(loginInfo, 'handleLogin');
+    handleLogin({ commit, state, rootState }, loginInfo: any) {
+      console.log(rootState, 'handleLogin');
       // return new Promise((resolve, reject) => {
       //   login({
       //     ...loginInfo
