@@ -1,13 +1,15 @@
 import { request } from '@/libs/request'
 import { AxiosPromise } from 'axios'
 
+type UrlType = Record<string, [string, string, object?]>
+
 class Dispatch {
-  private url
-  constructor(url: Record<string, [string, string, object?]>) {
+  private url: UrlType
+  constructor(url: UrlType) {
     this.url = url
   }
 
-  use(todo: string, dataset: object): AxiosPromise<any> {
+  use(todo: string, dataset = {}): AxiosPromise<any> {
     const args = this.url[todo]
     if (!args) {
       throw new Error('参数正确，请检查API方法定义')

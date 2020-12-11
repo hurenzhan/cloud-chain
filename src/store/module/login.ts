@@ -12,6 +12,7 @@ import { RecordType } from '@/types/common'
 // } from '@/api/user'
 // import { login } from '@/api/login'
 import { getToken } from '@/libs/util'
+import { testDispatch } from '@/service/common'
 
 interface InitState {
   token: string;
@@ -40,8 +41,10 @@ export default {
   },
   actions: {
     // 登录
-    handleLogin({ commit, state, rootState }, loginInfo: any) {
-      console.log(rootState, 'handleLogin');
+    async handleLogin({ commit, state, rootState }, loginInfo: any) {
+      const a: RecordType = await testDispatch.use('get')
+      commit('save', { a: a.message })
+
       // return new Promise((resolve, reject) => {
       //   login({
       //     ...loginInfo

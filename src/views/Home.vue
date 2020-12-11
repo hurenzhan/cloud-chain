@@ -3,6 +3,9 @@
     <img alt="Vue logo" src="../assets/logo.png" />
     <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
     {{ token }}{{ loginTest }}{{ loginTestGetters }}{{ ttt }}
+    <div>
+      <img :src="a" />
+    </div>
   </div>
 </template>
 
@@ -10,8 +13,6 @@
 import { defineComponent, reactive, toRefs } from 'vue'
 import HelloWorld from '@/components/HelloWorld.vue' // @ is an alias to /src
 import mapStore from '@/libs/mapStore.ts' // @ is an alias to /src
-import { findDict } from '@/libs/util'
-import { TEST_DICT, TEST_TYPE } from '@/libs/dicts'
 // const {
 //   mapState,
 //   mapActions,
@@ -48,7 +49,12 @@ export default defineComponent({
     const { save } = getMutations(['save'])
     const { loginTestGetters } = getGetters(['loginTestGetters'])
 
-    const { token, loginTest, ttt } = getState(['token', 'loginTest', 'ttt'])
+    const { token, loginTest, ttt, a } = getState([
+      'token',
+      'loginTest',
+      'ttt',
+      'a',
+    ])
     // const { token, loginTest } = mapState(['token', 'loginTest'])
     // const { token, loginTest } = mapState(['token', 'loginTest'])
 
@@ -57,31 +63,23 @@ export default defineComponent({
       loginTest: 'sssss',
     })
 
-    handleLogin({ token, loginTest })
-
-    console.log(token.value, loginTest.value, 'token, loginTest')
-    // console.log(token.call({ $store: store }))
-
-    console.log(loginTestGetters, 'loginTestGetters')
+    // handleLogin({ token, loginTest })
 
     setTimeout(() => {
       save({
-        token: 1,
+        token: 996,
         loginTest: '1',
         ttt: 666,
       })
       handleLogin({ token, loginTest })
-      console.log(
-        findDict(TEST_DICT, TEST_TYPE.ONE),
-        'findDict(TEST_DICT, TEST_TYPE.ONE)'
-      )
-    }, 2000)
-
+    }, 5000)
+    handleLogin({ token, loginTest })
     const state = reactive({
       token,
       loginTest,
       loginTestGetters,
       ttt,
+      a,
     })
     return {
       ...toRefs(state),

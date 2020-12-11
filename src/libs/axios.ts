@@ -6,7 +6,7 @@ import { getToken } from './util'
 const CancelToken = axios.CancelToken
 
 class HttpRequest {
-  private baseUrl
+  private baseUrl: string
   private pending: Record<string, Canceler>
 
   constructor(baseUrl: string) {
@@ -26,7 +26,7 @@ class HttpRequest {
     return config
   }
 
-  removePending(key: string, isRequest: Boolean = false) {
+  removePending(key: string, isRequest = false) {
     if (this.pending[key] && isRequest) {
       this.pending[key]('取消重复请求')
     }
@@ -73,14 +73,14 @@ class HttpRequest {
   }
 
   // 创建实例
-  request(options: Object) {
+  request(options: Record<string, any>) {
     const instance = axios.create()
     const newOptions: AxiosRequestConfig = Object.assign(this.getInsideConfig(), options)
     this.interceptors(instance)
     return instance(newOptions)
   }
 
-  get(url: String, config: Object) {
+  get(url: string, config?: Record<string, any>) {
     const options = Object.assign(
       {
         method: 'get',
@@ -91,7 +91,7 @@ class HttpRequest {
     return this.request(options)
   }
 
-  post(url: String, data: Object) {
+  post(url: string, data: Record<string, any>) {
     return this.request({
       method: 'post',
       url: url,

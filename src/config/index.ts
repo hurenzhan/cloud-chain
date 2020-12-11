@@ -7,6 +7,7 @@ export default {
    * @description api请求基础路径
    */
   baseUrl: {
+    // dev: 'https://dog.ceo',
     dev: 'http://localhost:3000',
     pro: 'http://api.dev.yunlian.com:22000'
   },

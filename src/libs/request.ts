@@ -17,7 +17,7 @@ const request = (url: string, method: string, dataset: object = {}) => {
     },
     method: method,
     [method === 'get' ? 'params' : 'data']: dataset,
-    paramsSerializer: (params: Object) => qs.stringify(params)
+    paramsSerializer: (params: Record<string, any>): string => qs.stringify(params)
   })
 }
 
