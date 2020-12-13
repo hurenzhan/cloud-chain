@@ -16,6 +16,8 @@
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from "vue";
 import { useRoute, RouteLocationNormalizedLoaded } from "vue-router";
+// import "ant-design-vue/dist/antd.css";
+// import 'ant-design-vue/components/style.js';
 
 interface State {
   routerConfig: RouteLocationNormalizedLoaded;
@@ -34,6 +36,8 @@ export default defineComponent({
 </script>
 
 <style lang="less">
+@import "./styles/index";
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

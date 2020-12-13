@@ -1,0 +1,49 @@
+@import "./variable";
+
+.size-width(@w) {
+    .@{ln-prefix} {
+        &-w-@{w} {
+            width: @w*1%;
+        }
+        &-w-max-@{w} {
+            max-width: @w*1%;
+        }
+        &-w-min-@{w} {
+            min-width: @w*1%;
+        }
+    }
+}
+.size-hwpx(@size) when(@size <= @ln-size-max){
+    .@{ln-prefix} {
+        &-hpx-@{size} {
+            height: (@size * 1px) !important
+        }
+        &-wpx-@{size} {
+            width: (@size * 1px) !important
+        }
+    }
+    .size-hwpx((@size + @ln-size-gutter))
+}
+.size-hwpx(1);
+
+.size-height(@h) {
+    .@{ln-prefix} {
+        &-h-@{h} {
+            height: @h*1%;
+        }
+        &-h-max-@{h} {
+            max-height: @h*1%;
+        }
+        &-h-min-@{h} {
+            min-height: @h*1%;
+        }
+    }
+}
+
+.loop-size(@n, @i: 1) when (@i =< @n) {
+    .size-width(@i*25);
+    .size-height(@i*25);
+    .loop-size(@n, (@i + 1));
+}
+
+.loop-size(4);

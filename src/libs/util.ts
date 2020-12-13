@@ -1,20 +1,23 @@
 import { Array2D, StrNum, StrNumUnd } from '@/types/common'
+import mapStore from './mapStore';
 
 export const TOKEN_KEY = 'token'
 
-// /**
-//  * @param {String} token
-//  * @description 设置 token
-//  */
-// export const setToken = (token: String) => {
-//   return ''
-// }
+/**
+ * @param {String} token
+ * @description 设置 token
+ */
+export const setToken = (token: string) => {
+  localStorage.setItem(TOKEN_KEY, token)
+}
 
 /**
  * @returns {String}
  * @description 获取 token
  */
-export const getToken = (): string => localStorage.getItem(TOKEN_KEY) || ''
+export const getToken = (): string | null => {
+  return localStorage.getItem(TOKEN_KEY)
+}
 
 /**
  * @param {Array} dict 数据字典

@@ -1,27 +1,18 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import {
-//   getUserInfo
-//   // logout,
-//   // getMessage,
-//   // getContentByMsgId,
-//   // hasRead,
-//   // removeReaded,
-//   // restoreTrash,
-//   // getUnreadCount
-// } from '@/api/user'
-// import { login } from '@/api/login'
 import { getToken } from '@/libs/util'
-import { testDispatch } from '@/service/common'
+import { loginDispatch } from '@/service/login'
 
 interface InitState {
-  token: string;
-  loginTest: string;
+  token: string | null;
+  userInfo: object;
+  loading: boolean;
 }
 
 const defaultState: InitState = {
-  token: getToken() || '666',
-  loginTest: 'loginTest',
+  token: getToken(),
+  userInfo: {},
+  loading: false
 }
 
 export default {
@@ -33,47 +24,17 @@ export default {
     }
   },
   getters: {
-    loginTestGetters: (state: InitState) => {
-      console.log(state.token);
-
-      return state.token
-    },
   },
   actions: {
     // 登录
-    async handleLogin({ commit, state, rootState }, loginInfo: any) {
-      const a: RecordType = await testDispatch.use('get')
-      commit('save', { a: a.message })
-
-      // return new Promise((resolve, reject) => {
-      //   login({
-      //     ...loginInfo
-      //   })
-      //     .then((res) => {
-      //       // console.log('TCL: handleLogin -> res', res)
-      //       if (res.code === 200) {
-      //         const data = res.data
-      //         commit('setToken', res.token)
-      //         commit('setAvatar', data.pic)
-      //         commit('setUserName', data.name)
-      //         commit('setUserId', data._id)
-      //         commit('setAccess', data.roles)
-      //         commit('setHasGetInfo', true)
-      //       }
-      //       resolve(res)
-      //     })
-      //     .catch((err) => {
-      //       reject(err)
-      //     })
-      // })
+    async handleLogin({ commit }, payload: any) {
+      const login = await loginDispatch.use('login')
     },
     // // 退出登录
-    // handleLogOut({ state, commit }) {
+    // handleLogOut() {
     // },
     // // 获取用户相关信息
-    // getUserInfo({ state, commit }) {
+    // getUserInfo() {
     // }
   }
 } as Module<any, any>
-
-// export default store
