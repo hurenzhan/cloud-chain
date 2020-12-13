@@ -36,7 +36,7 @@ export default defineComponent({
 </script>
 
 <style lang="less">
-@import "./styles/index";
+// @import "./styles/index";
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

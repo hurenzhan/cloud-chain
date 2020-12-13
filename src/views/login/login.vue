@@ -1,16 +1,16 @@
 <template>
   <div class="login">
-    <Button type="primary">login</Button>
+    <!-- <Button type="primary">login</Button> -->
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from "vue";
-import { Button } from "ant-design-vue";
+// import { Button } from "ant-design-vue";
 import mapStore from "@/libs/mapStore";
 export default defineComponent({
   name: "login",
-  components: { Button },
+  // components: { Button },
   setup() {
     const loginStore = mapStore("login");
     const { getState, getActions } = loginStore;
