@@ -5,5 +5,9 @@
       "libraryDirectory": "es",
       "style": true
     }] // `style: true` 会加载 less 文件
-  ]
+  ],
+  "extends": ["plugin:vue/vue3-recommended"],
+  "rules": {
+    "vue/no-multiple-template-root": "off"
+  }
 }
