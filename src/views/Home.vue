@@ -6,10 +6,10 @@
     <div class="ln-mt-10">
       <img :src="a" />
     </div>
-    <Button
+    <a-button
       >You are using a whole package of antd, please use
       https://www.npmjs.com/package/babel-plugin-import to reduce app bundle
-      size.</Button
+      size.</a-button
     >
   </div>
 </template>
@@ -17,8 +17,7 @@
 <script lang="ts">
 import { defineComponent, reactive, toRefs } from 'vue'
 import HelloWorld from '@/components/HelloWorld.vue' // @ is an alias to /src
-import mapStore from '@/libs/mapStore.ts' // @ is an alias to /src
-import { Button } from 'ant-design-vue'
+import mapStore from '@/libs/mapStore.ts' // @
 // const {
 //   mapState,
 //   mapActions,
@@ -30,7 +29,6 @@ export default defineComponent({
   name: 'Home',
   components: {
     HelloWorld,
-    Button,
   },
   setup() {
     // const store = useStore()

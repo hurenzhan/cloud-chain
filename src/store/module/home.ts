@@ -11,7 +11,7 @@ import { RecordType } from '@/types/common'
 //   // getUnreadCount
 // } from '@/api/user'
 // import { login } from '@/api/login'
-import { getToken } from '@/libs/util'
+import { getToken } from '@/libs/utils'
 import { testDispatch } from '@/service/common'
 
 interface InitState {

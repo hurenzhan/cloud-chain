@@ -1,0 +1,21 @@
+// 颜色变量
+@white: white;
+
+// 方法
+// 除了第一个
+.fn-not-first(@className, @attr, @count) {
+    .@{className} {
+        &:not(:first-child) {
+            @{attr}: @count;
+        }
+    }
+}
+
+// 除了最后一个
+.fn-not-last(@className, @attr, @count) {
+    .@{className} {
+        &:not(:last-child) {
+            @{attr}: @count;
+        }
+    }
+}

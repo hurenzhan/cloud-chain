@@ -1,4 +1,4 @@
-import { getToken } from '@/libs/util'
+import { getToken } from '@/libs/utils'
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from './routers'
 import config from '@/config'

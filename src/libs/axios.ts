@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, Canceler } from 'axios'
 // import { Spin } from 'iview'
 import publicConfig from '@/config'
-import { getToken } from './util'
+import { getToken } from './utils'
 
 const CancelToken = axios.CancelToken
 
