@@ -14,7 +14,7 @@
             <VerificationCodeInput
               v-model:value="modelRef.verificationCode"
               @blur="validate('pass', { trigger: 'blur' }).catch(() => {})"
-              @handleCountdown="getVerificationCode"
+              :handleCountdown="getVerificationCode"
               placeholder="请输入验证码"
             />
           </FormItem>
@@ -30,12 +30,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRaw } from 'vue';
-import { Row, Col, Form } from 'ant-design-vue';
-import { useForm } from '@ant-design-vue/use';
-import TextInput from './TextInput.vue';
-import VerificationCodeInput from './VerificationCodeInput.vue';
-import SubmitButton from './SubmitButton.vue';
+import { defineComponent, reactive, toRaw } from "vue";
+import { Row, Col, Form } from "ant-design-vue";
+import { useForm } from "@ant-design-vue/use";
+import TextInput from "./TextInput.vue";
+import VerificationCodeInput from "./VerificationCodeInput.vue";
+import SubmitButton from "./SubmitButton.vue";
 
 const { Item: FormItem } = Form;
 
@@ -45,7 +45,7 @@ interface StateType {
 }
 
 export default defineComponent({
-  name: 'verificationLogin',
+  name: "verificationLogin",
   components: {
     Row,
     Col,
@@ -64,19 +64,19 @@ export default defineComponent({
       phone: [
         {
           required: true,
-          message: 'Please input Activity phone',
+          message: "Please input Activity phone",
         },
         {
           min: 3,
           max: 5,
-          message: 'Length should be 3 to 5',
-          trigger: 'blur',
+          message: "Length should be 3 to 5",
+          trigger: "blur",
         },
       ],
       verificationCode: [
         {
           required: true,
-          message: 'Please select berificationCode',
+          message: "Please select berificationCode",
         },
       ],
     });
@@ -88,13 +88,34 @@ export default defineComponent({
           console.log(toRaw(modelRef));
         })
         .catch((err) => {
-          console.log('error', err);
+          console.log("error", err);
         });
     };
 
-    const getVerificationCode = () => {
-      console.log(1);
-      return 2;
+    const checkPhone = () => {
+      return new Promise((resolve, reject) => {
+        validate("phone")
+          .then(() => {
+            setTimeout(() => {
+              resolve(true);
+            }, 3000);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+
+        setTimeout(() => {
+          resolve(true);
+        }, 3000);
+      });
+    };
+
+    const getVerificationCode = async () => {
+      // return new Promise(async (resolve) => {
+      const a = await checkPhone();
+      console.log(a, "a");
+      return a;
+      // });
     };
 
     return {
