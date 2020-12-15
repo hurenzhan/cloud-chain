@@ -5,7 +5,7 @@ module.exports = {
         proxy: {
             '/api': {
                 target: 'https://dog.ceo',
-                ws: true,
+                // ws: true,
                 changeOrigin: true,
                 secure: false,
                 pathRewrite: {
