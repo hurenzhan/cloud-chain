@@ -12,14 +12,13 @@
       </router-view>
     </Content>
   </Layout>
-  {{ routerConfig }}
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from "vue";
-import { useRoute, RouteLocationNormalizedLoaded } from "vue-router";
-import UserHeader from "./UserHeader.vue";
-import { Layout } from "ant-design-vue";
+import { defineComponent, reactive, toRefs } from 'vue';
+import { useRoute, RouteLocationNormalizedLoaded } from 'vue-router';
+import UserHeader from '@/components/UserHeader.vue';
+import { Layout } from 'ant-design-vue';
 const { Header, Content } = Layout;
 
 interface State {
@@ -27,7 +26,7 @@ interface State {
 }
 
 export default defineComponent({
-  name: "home",
+  name: 'home',
   components: {
     UserHeader,
     Layout,
@@ -46,7 +45,7 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-@import "~@/styles/utils";
+@import '~@/styles/utils';
 .ant-layout-header {
   background: @white;
 }

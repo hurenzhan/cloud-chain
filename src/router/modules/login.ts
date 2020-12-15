@@ -1,7 +1,7 @@
 import { getToken } from '@/libs/utils'
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-const Login: Component = () => import(/* webpackChunkName: "about" */ '@/views/login/login.vue')
+const Login: Component = () => import(/* webpackChunkName: "about" */ '@/views/login/Login.vue')
 
 const routes: Array<RouteRecordRaw> = [
   {
