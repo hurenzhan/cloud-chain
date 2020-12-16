@@ -4,68 +4,92 @@
     &-flex-row {
         flex-direction: row;
     }
+
     &-flex-row-reverse {
         flex-direction: row-reverse;
     }
+
     &-flex-column {
         flex-direction: column;
     }
+
     &-flex-column-reverse {
         flex-direction: column-reverse;
     }
+
+    &-flex-xy-center {
+        justify-content: center;
+        align-items: center;
+    }
+
     &-justify-c-start {
         justify-content: flex-start;
     }
+
     &-justify-c-end {
         justify-content: flex-end;
     }
+
     &-justify-c-center {
         justify-content: center;
     }
+
     &-justify-c-between {
         justify-content: space-between;
     }
+
     &-justify-c-around {
         justify-content: space-around;
     }
+
     &-align-i-start {
         align-items: flex-start;
     }
+
     &-align-i-end {
         align-items: flex-end;
     }
+
     &-align-i-center {
         align-items: center;
     }
+
     &-align-i-baseline {
         align-items: baseline;
     }
+
     &-align-i-stretch {
         align-items: stretch;
     }
+
     &-align-s-start {
         align-self: start;
     }
+
     &-align-s-end {
         align-self: end;
     }
+
     &-align-s-center {
         align-self: center;
     }
+
     &-align-s-baseline {
         align-self: baseline;
     }
+
     &-align-s-stretch {
         align-self: stretch;
     }
 }
 
-.loop-flex(@c, @i:1) when (@i <= @c) {
+.loop-flex(@c, @i: 1) when (@i <=@c) {
     .@{ln-prefix} {
         &-flex-@{i} {
             flex: @i
         }
     }
+
     .loop-flex(@c, (@i + 1));
 }
 
