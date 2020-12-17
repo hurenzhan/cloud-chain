@@ -10,10 +10,14 @@
               placeholder="请输入手机号"
             />
           </FormItem>
-          <FormItem v-bind="validateInfos.pass">
+          <FormItem v-bind="validateInfos.verificationCode">
             <VerificationCodeInput
               v-model:value="modelRef.verificationCode"
-              @blur="validate('pass', { trigger: 'blur' }).catch(() => {})"
+              @blur="
+                validate('verificationCode', {
+                  trigger: 'blur',
+                }).catch(() => {})
+              "
               :handleCountdown="getVerificationCode"
               placeholder="请输入验证码"
             />
@@ -30,12 +34,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRaw } from "vue";
-import { Row, Col, Form } from "ant-design-vue";
-import { useForm } from "@ant-design-vue/use";
-import TextInput from "./TextInput.vue";
-import VerificationCodeInput from "./VerificationCodeInput.vue";
-import SubmitButton from "./SubmitButton.vue";
+import { defineComponent, reactive, toRaw } from 'vue';
+import { Row, Col, Form } from 'ant-design-vue';
+import { useForm } from '@ant-design-vue/use';
+import TextInput from './TextInput.vue';
+import VerificationCodeInput from './VerificationCodeInput.vue';
+import SubmitButton from './SubmitButton.vue';
+import { regs } from '@/libs/utils';
 
 const { Item: FormItem } = Form;
 
@@ -45,7 +50,8 @@ interface StateType {
 }
 
 export default defineComponent({
-  name: "verificationLogin",
+  name: 'verificationLogin',
+
   components: {
     Row,
     Col,
@@ -55,32 +61,36 @@ export default defineComponent({
     VerificationCodeInput,
     SubmitButton,
   },
+
   setup() {
     const modelRef: StateType = reactive({
       phone: null,
       verificationCode: null,
+      isErrPhone: false,
     });
+
     const rulesRef = reactive({
       phone: [
         {
           required: true,
-          message: "Please input Activity phone",
+          message: '手机号不能为空',
         },
         {
-          min: 3,
-          max: 5,
-          message: "Length should be 3 to 5",
-          trigger: "blur",
+          trigger: 'blur',
+          pattern: regs.phone,
+          message: '请输入正确的手机格式',
         },
       ],
       verificationCode: [
         {
           required: true,
-          message: "Please select berificationCode",
+          message: '验证码不能为空',
         },
       ],
     });
+
     const { validate, validateInfos } = useForm(modelRef, rulesRef);
+
     const onSubmit = (e: Event) => {
       e.preventDefault();
       validate()
@@ -88,34 +98,25 @@ export default defineComponent({
           console.log(toRaw(modelRef));
         })
         .catch((err) => {
-          console.log("error", err);
+          console.log('error', err);
         });
     };
 
-    const checkPhone = () => {
+    const checkPhone = async () => {
       return new Promise((resolve, reject) => {
-        validate("phone")
+        validate('phone')
           .then(() => {
-            setTimeout(() => {
-              resolve(true);
-            }, 3000);
+            resolve(true);
           })
           .catch((err) => {
             reject(err);
           });
-
-        setTimeout(() => {
-          resolve(true);
-        }, 3000);
       });
     };
 
     const getVerificationCode = async () => {
-      // return new Promise(async (resolve) => {
-      const a = await checkPhone();
-      console.log(a, "a");
-      return a;
-      // });
+      const isPhoneFormat = await checkPhone();
+      return isPhoneFormat;
     };
 
     return {

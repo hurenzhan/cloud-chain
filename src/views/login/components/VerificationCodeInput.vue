@@ -1,50 +1,81 @@
 <template>
   <div class="login__input-verification_code">
     <Input size="large" :="attrs" />
-    <Button size="large" @click="onClick" type="primary">获取验证码</Button>
+    <Button :disabled="loading" size="large" @click="onClick" type="primary">
+      {{ btnName }}</Button
+    >
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, reactive, toRefs, PropType } from "vue";
-import { Input, Button } from "ant-design-vue";
+import {
+  defineComponent,
+  reactive,
+  computed,
+  toRefs,
+  PropType,
+  onUnmounted,
+} from 'vue';
+import { Input, Button } from 'ant-design-vue';
 
 interface StateType {
   loading: boolean;
+  count: number;
+  btnName: string;
 }
 
 type HandleCountdownType = () => Promise<any> | (() => void);
 
+const INIT_COUNT = 60;
+
+let timer: number;
+
 export default defineComponent({
-  name: "verificationCodeInput",
+  name: 'verificationCodeInput',
+
   inheritAttrs: false,
+
   components: {
     Input,
     Button,
   },
-  // emits: ["handleCountdown"],
+
   props: {
     handleCountdown: {
       type: Function as PropType<HandleCountdownType>,
       required: true,
     },
-  }, //   emits: {
-  //     handleCountdown: (val) => {
-  //       console.log(val, 'val');
-  //       return true;
-  //     },
-  //   },
-  setup(props, { attrs, emit }) {
+  },
+
+  setup(props, { attrs }) {
     const state: StateType = reactive({
       loading: false,
+      count: INIT_COUNT,
+      btnName: computed(() =>
+        state.loading ? state.count + 's' : '获取验证码'
+      ),
     });
-    const onClick = async () => {
-      props?.handleCountdown;
-      const isNext = await props.handleCountdown();
-      if (isNext) {
-        console.log(666);
-      }
+
+    const setCountdown = () => {
+      state.loading = true;
+      timer = setInterval(() => {
+        state.count--;
+        if (state.count <= 0) {
+          clearInterval(timer);
+          state.loading = false;
+          state.count = INIT_COUNT;
+        }
+      }, 1000);
     };
+
+    const onClick = async () => {
+      const isNext = await props.handleCountdown();
+      if (isNext) setCountdown();
+    };
+
+    onUnmounted(() => {
+      clearInterval(timer);
+    });
 
     return {
       ...toRefs(state),
@@ -56,7 +87,7 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-@import "~@/styles/utils";
+@import '~@/styles/utils';
 .login__input-verification_code {
   position: relative;
   width: @login-input-width;
@@ -65,6 +96,7 @@ export default defineComponent({
     width: 208px;
   }
   .ant-btn {
+    width: 112px;
     height: 38px;
     border-radius: 0 2px 2px 0;
   }

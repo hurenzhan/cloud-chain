@@ -27,3 +27,11 @@ export const getToken = (): string | null => {
  * @description 查询字典，传key返回value，反之返回key
  */
 export const findDict = (dict: Array2D, index: StrNum, indexType = 0): StrNumUnd => dict.find((item: StrNum[]) => item[indexType] === index)?.[indexType ^ 1]
+
+/**
+ * @description 正则索引
+ */
+export const regs = {
+  // 手机号
+  phone: /^1(3|4|5|6|7|8|9)\d{9}$/
+}
