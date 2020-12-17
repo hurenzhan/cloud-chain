@@ -1,5 +1,5 @@
 import { Array2D, StrNum, StrNumUnd } from '@/types/common'
-import mapStore from './mapStore';
+import router from '@/router'
 
 export const TOKEN_KEY = 'token'
 
@@ -35,3 +35,13 @@ export const regs = {
   // 手机号
   phone: /^1(3|4|5|6|7|8|9)\d{9}$/
 }
+
+/**
+ * @description 返回上一页
+ */
+export const pageBack = () => {
+  router.back();
+}
+
+
+

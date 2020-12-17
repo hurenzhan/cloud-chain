@@ -8,7 +8,7 @@
         switchName
       }}</Button>
       <Button type="link" class="ln-p-0"
-        ><router-link to="/">注册</router-link></Button
+        ><router-link to="/userReg">注册</router-link></Button
       >
     </Row>
   </div>

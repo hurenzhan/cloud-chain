@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
-import home from './module/home'
 import login from './module/login'
+import home from './module/home/index'
+import tagSet from './module/tagSet/index'
 
 export default createStore({
   state: {
@@ -10,7 +11,8 @@ export default createStore({
   actions: {
   },
   modules: {
-    home,
-    login
+    login,
+    ...home,
+    ...tagSet
   }
 })

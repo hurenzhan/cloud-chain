@@ -15,6 +15,7 @@
               v-model:value="modelRef.pass"
               @blur="validate('pass', { trigger: 'blur' }).catch(() => {})"
               placeholder="请输入密码"
+              autocomplete="off"
             />
           </FormItem>
           <FormItem>
@@ -35,6 +36,7 @@ import { useForm } from '@ant-design-vue/use';
 import PassInput from './PassInput.vue';
 import TextInput from './TextInput.vue';
 import SubmitButton from './SubmitButton.vue';
+import { regs } from '@/libs/utils';
 
 const { Item: FormItem } = Form;
 
@@ -63,19 +65,18 @@ export default defineComponent({
       phone: [
         {
           required: true,
-          message: 'Please input Activity phone',
+          message: '手机号不能为空',
         },
         {
-          min: 3,
-          max: 5,
-          message: 'Length should be 3 to 5',
           trigger: 'blur',
+          pattern: regs.phone,
+          message: '请输入正确的手机格式',
         },
       ],
       pass: [
         {
           required: true,
-          message: 'Please select pass',
+          message: '密码不能为空',
         },
       ],
     });

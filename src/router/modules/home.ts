@@ -1,7 +1,9 @@
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
+import tagSet from './tagSet'
+
 const Home: Component = () => import(/* webpackChunkName: "about" */ '@/views/Home.vue')
-const Login: Component = () => import(/* webpackChunkName: "about" */ '@/views/login/Login.vue')
+const Invoices: Component = () => import(/* webpackChunkName: "about" */ '@/views/invoices/Index.vue')
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -9,22 +11,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'home',
         component: Home,
         children: [
-            // {
-            //     path: '/home',
-            //     name: '/home',
-            //     meta: {
-            //         title: '社区信息'
-            //     },
-            //     component: Login
-            // },
-            // {
-            //     path: '/home2',
-            //     name: '/home2',
-            //     meta: {
-            //         title: '社区信息'
-            //     },
-            //     component: Home
-            // }
+            {
+                path: '/home',
+                name: '/home',
+                component: Invoices
+            },
+            ...tagSet
         ]
     },
 ]
