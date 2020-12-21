@@ -8,82 +8,96 @@
           </Button>
         </Col>
         <Col>
-          <Button type="primary">创建标签</Button>
+          <Button type="primary" @click="visible = true">创建标签</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
         <Col span="24">
-          <Table :columns="columns" :data-source="tableData.pageInfo">
-            <template #name="{ text }">
-              <a>{{ text }}</a>
+          <Table
+            rowKey="id"
+            :columns="columns"
+            @change="handleTableChange"
+            :data-source="tableData.pageInfo"
+            :pagination="{
+              current: searchCondition.pageNo,
+              pageSize: searchCondition.pageSize,
+              change: handlePagination,
+              total: tableData.total,
+              showTotal: () => `共 ${tableData.total} 条`,
+              showSizeChanger: true,
+              showQuickJumper: true,
+            }"
+          >
+            <template #id="{ index }">
+              <span>{{ index + 1 }}</span>
             </template>
-            <template #customTitle>
-              <span> Name</span>
+            <template #tagName="{ text }">
+              <span> {{ text }}</span>
             </template>
-            <template #tags="{ text: tags }">
-              <span>
-                <Tag
-                  v-for="tag in tags"
-                  :key="tag"
-                  :color="
-                    tag === 'loser'
-                      ? 'volcano'
-                      : tag.length > 5
-                      ? 'geekblue'
-                      : 'green'
-                  "
-                >
-                  {{ tag.toUpperCase() }}
-                </Tag>
-              </span>
+            <template #createTime="{ text }">
+              <span> {{ text }}</span>
             </template>
-            <template #action="{ record }">
-              <span>
-                <a>Invite 一 {{ record.name }}</a>
-                <Divider type="vertical" />
-                <a>Delete</a>
-                <Divider type="vertical" />
-                <a class="ant-dropdown-link"> More actions </a>
-              </span>
+            <template #createName="{ text }">
+              <span> {{ text }}</span>
+            </template>
+            <template #status="{ text }">
+              <span> {{ text }}</span>
+            </template>
+            <template #action>
+              <Space :size="8">
+                <span>编辑</span>
+                <router-link to="/tagList/dataItem">数据项</router-link>
+                <span>装箱规则</span>
+                <span>打印模板</span>
+                <span>启用</span>
+              </Space>
             </template>
           </Table>
         </Col>
-        <Col>
-          <Pagination
-            v-model:current="searchCondition.pageNo"
-            v-model:pageSize="searchCondition.pageSize"
-            @showSizeChange="handlePagination"
-            @change="handlePagination"
-            :show-total="() => `共 ${tableData.total} 条`"
-            :total="tableData.total"
-            :showSizeChanger="true"
-          />
-        </Col>
       </Row>
     </Space>
-    {{ searchCondition }}
+    <Modal
+      v-model:visible="visible"
+      title="创建标签"
+      @ok="handleCreateTag"
+      @cancel="resetFields"
+    >
+      <Form :label-col="labelCol" :wrapper-col="wrapperCol">
+        <FormItem label="标签名称" :="validateInfos.name">
+          <Input v-model:value="modelRef.name" />
+        </FormItem>
+      </Form>
+    </Modal>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from 'vue';
+import { defineComponent, reactive, toRefs, toRaw } from 'vue';
 import {
   Row,
   Col,
   Button,
   Table,
-  Tag,
-  Divider,
   Space,
-  Pagination,
+  Modal,
+  Form,
+  Input,
 } from 'ant-design-vue';
 import { LeftOutlined } from '@ant-design/icons-vue';
+import { useForm } from '@ant-design-vue/use';
 import mapStore from '@/libs/mapStore';
 import { pageBack } from '@/libs/utils';
-// import { PaginationType } from '@/types/common';
+import { RecordType } from '@/types/common';
+
+const { Item: FormItem } = Form;
 
 interface StateType {
-  columns: any[];
+  columns: RecordType[];
+  visible: boolean;
+}
+
+interface ModelRefType {
+  name: string;
 }
 
 export default defineComponent({
@@ -95,75 +109,108 @@ export default defineComponent({
     Button,
     LeftOutlined,
     Table,
-    Tag,
-    Divider,
     Space,
-    Pagination,
+    Modal,
+    Form,
+    FormItem,
+    Input,
   },
 
   setup() {
-    const state: StateType = reactive({
-      columns: [
-        {
-          dataIndex: 'name',
-          key: 'name',
-          slots: { title: 'customTitle', customRender: 'name' },
-        },
-        {
-          title: 'Age',
-          dataIndex: 'age',
-          key: 'age',
-        },
-        {
-          title: 'Address',
-          dataIndex: 'address',
-          key: 'address',
-        },
-        {
-          title: 'Tags',
-          key: 'tags',
-          dataIndex: 'tags',
-          slots: { customRender: 'tags' },
-        },
-        {
-          title: 'Action',
-          key: 'action',
-          slots: { customRender: 'action' },
-        },
-      ],
-      aa: 1,
-    });
-
+    // 数据流
     const { getState, getActions } = mapStore('tagList');
     const { searchCondition, tableData } = getState([
       'searchCondition',
       'tableData',
     ]);
     const { fetchTagList } = getActions(['fetchTagList']);
+    // 组件数据
+    const state: StateType = reactive({
+      columns: [
+        {
+          title: 'ID',
+          dataIndex: 'id',
+          key: 'id',
+          slots: { customRender: 'id' },
+        },
+        {
+          title: '标签名称',
+          dataIndex: 'tagName',
+          key: 'tagName',
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createTime',
+          key: 'createTime',
+        },
+        {
+          title: '创建人',
+          key: 'createName',
+          dataIndex: 'createName',
+        },
+        {
+          title: '状态',
+          key: 'status',
+          dataIndex: 'status',
+        },
+        {
+          title: '操作',
+          key: 'action',
+          slots: { customRender: 'action' },
+        },
+      ],
+      visible: false,
+    });
+    // 表单
+    const modelRef: ModelRefType = reactive({
+      name: '',
+    });
+    const rulesRef = reactive({
+      name: [
+        {
+          required: true,
+          message: '标签名称不能为空！',
+        },
+      ],
+    });
+    const { resetFields, validate, validateInfos } = useForm(
+      modelRef,
+      rulesRef
+    );
 
-    const handlePagination = (pageCurrent: number, pageSize: number) => {
-      console.log(pageCurrent, pageSize);
-
+    // 处理分页
+    const handlePagination = (pagination: RecordType) => {
+      searchCondition.value.pageNo = pagination.current;
       fetchTagList(searchCondition.value);
     };
-
-    // const pagination: any = {
-    //   total: tableData?.value?.total,
-    //   showSizeChanger: true,
-    //   showSizeChange: (current: number, size: number) =>
-    //     handlePagination(current, size),
-    //   change: (current: number, size: number) =>
-    //     handlePagination(current, size),
-    //   showTotal: (total: string | number) => `共 ${total} 条`,
-    // };
+    // 表格操作
+    const handleTableChange = (pagination: RecordType) => {
+      handlePagination(pagination);
+    };
+    // 处理标签创建
+    const handleCreateTag = () => {
+      validate()
+        .then(() => {
+          console.log(toRaw(modelRef));
+        })
+        .catch((err) => {
+          console.log('error', err);
+        });
+    };
 
     return {
       ...toRefs(state),
       tableData,
       pageBack,
-      // pagination,
+      modelRef,
+      resetFields,
+      validateInfos,
       searchCondition,
       handlePagination,
+      handleTableChange,
+      handleCreateTag,
+      labelCol: { span: 6 },
+      wrapperCol: { span: 14 },
     };
   },
 });
