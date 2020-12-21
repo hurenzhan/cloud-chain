@@ -1,0 +1,27 @@
+// 颜色变量
+@white: white;
+@black: black;
+@0-0-0_85: rgba(0, 0, 0, 0.85);
+@0-0-0_65: rgba(0, 0, 0, 0.65);
+
+// 尺寸
+@login-input-width: 320px;
+
+// 方法
+// 除了第一个
+.fn-not-first(@className, @attr, @count) {
+    .@{className} {
+        &:not(:first-child) {
+            @{attr}: @count;
+        }
+    }
+}
+
+// 除了最后一个
+.fn-not-last(@className, @attr, @count) {
+    .@{className} {
+        &:not(:last-child) {
+            @{attr}: @count;
+        }
+    }
+}

@@ -1,0 +1,81 @@
+@import "./variable";
+
+.padding( @count )when( @count <=@ln-spacing-max) {
+    .@{ln-prefix} {
+        &-pt-@{count} {
+            padding-top: ( 1px * @count ) !important;
+        }
+        &-pr-@{count} {
+            padding-right: ( 1px * @count ) !important;
+        }
+        &-pb-@{count} {
+            padding-bottom: ( 1px * @count ) !important;
+        }
+        &-pl-@{count} {
+            padding-left: ( 1px * @count ) !important;
+        }
+        &-py-@{count} {
+            padding-top: ( 1px * @count ) !important;
+            padding-bottom: ( 1px * @count ) !important;
+        }
+        &-px-@{count} {
+            padding-left: ( 1px * @count ) !important;
+            padding-right: ( 1px * @count ) !important;
+        }
+        &-p-@{count} {
+            padding: ( 1px * @count ) !important;
+        }
+    }
+    .padding((@count + @ln-spacing-gutter));
+}
+
+.padding(@ln-spacing-min);
+
+.margin( @count )when( @count <=@ln-spacing-max) {
+    .@{ln-prefix} {
+        &-mt-@{count} {
+            margin-top: ( 1px * @count ) !important;
+        }
+        &-mr-@{count} {
+            margin-right: ( 1px * @count ) !important;
+        }
+        &-mb-@{count} {
+            margin-bottom: ( 1px * @count ) !important;
+        }
+        &-ml-@{count} {
+            margin-left: ( 1px * @count ) !important;
+        }
+        &-my-@{count} {
+            margin-top: ( 1px * @count ) !important;
+            margin-bottom: ( 1px * @count ) !important;
+        }
+        &-mx-@{count} {
+            margin-left: ( 1px * @count ) !important;
+            margin-right: ( 1px * @count ) !important;
+        }
+        &-m-@{count} {
+            margin: ( 1px * @count ) !important;
+        }
+    }
+    .margin((@count + @ln-spacing-gutter));
+}
+
+.margin(@ln-spacing-min);
+
+.@{ln-prefix} {
+    &-m-auto {
+        margin: auto !important;
+    }
+    &-mt-auto {
+        margin-top: auto !important;
+    }
+    &-mr-auto {
+        margin-right: auto !important;
+    }
+    &-mb-auto {
+        margin-bottom: auto !important;
+    }
+    &-ml-auto {
+        margin-left: auto !important;
+    }
+}

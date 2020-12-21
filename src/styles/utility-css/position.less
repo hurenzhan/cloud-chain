@@ -1,0 +1,30 @@
+@import "./variable";
+
+.@{ln-prefix} {
+    &-position-static {
+        position: static;
+    }
+
+    &-position-relative {
+        position: relative;
+    }
+
+    &-position-absolute {
+        position: absolute;
+    }
+
+    &-position-fixed {
+        position: fixed;
+    }
+
+    &-position-sticky {
+        position: sticky;
+    }
+
+    &-position-absolute-center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}

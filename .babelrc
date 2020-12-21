@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    ["import", {
+      "libraryName": "ant-design-vue",
+      "libraryDirectory": "es",
+      "style": true
+    }]
+  ],
+  "extends": ["plugin:vue/vue3-recommended"],
+  "rules": {
+    "vue/no-multiple-template-root": "off"
+  }
+}

@@ -1,0 +1,63 @@
+@import "./variable";
+
+.bt() {
+    border-top: 1px solid @ln-border-color-base;
+}
+
+.bb() {
+    border-bottom: 1px solid @ln-border-color-base;
+}
+
+.bl() {
+    border-left: 1px solid @ln-border-color-base;
+}
+
+.br() {
+    border-right: 1px solid @ln-border-color-base;
+}
+.@{ln-prefix} {
+    &-border-top {
+        .bt;
+    }
+    &-border-bottom {
+        .bb;
+    }
+    &-border-left {
+        .bl;
+    }
+    &-border-right {
+        .br;
+    }
+    &-border-x {
+        .bl;
+        .br;
+    }
+    &-border-y {
+        .bt;
+        .bb;
+    }
+    &-border {
+        .bt;
+        .br;
+        .bb;
+        .bl;
+    }
+    &-border-0 {
+        border: 0;
+    }
+    &-border-top-0 {
+        border-top: 0;
+    }
+    &-border-right-0 {
+        border-right: 0;
+    }
+    &-border-bottom-0 {
+        border-bottom: 0;
+    }
+    &-border-left-0 {
+        border-left: 0;
+    }
+    &-border-circle {
+        border-radius: 50%;
+    }
+}
