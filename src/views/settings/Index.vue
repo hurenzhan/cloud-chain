@@ -54,7 +54,11 @@
         <Content>
           <router-view #="{ Component }">
             <keep-alive>
-              <component v-if="routerConfig.meta.keepAlive" :is="Component" />
+              <component
+                v-if="routerConfig.meta.keepAlive"
+                :key="routerConfig.name"
+                :is="Component"
+              />
             </keep-alive>
             <component v-if="!routerConfig.meta.keepAlive" :is="Component" />
           </router-view>
@@ -80,14 +84,6 @@ const { Header, Content, Sider } = Layout;
 interface State {
   routerConfig: RouteLocationNormalizedLoaded;
 }
-
-const menuList = [
-  {
-    name: '基本设置',
-    path: '/settings/basic',
-    pathName: 'basic',
-  },
-];
 
 export default defineComponent({
   name: 'settings',

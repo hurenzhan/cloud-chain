@@ -1,5 +1,6 @@
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
+const TagList: Component = () => import(/* webpackChunkName: "about" */ '@/views/tagList/Index.vue')
 const Settings: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/Index.vue')
 const SettingBasic: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/Basic.vue')
 const User: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/User.vue')
@@ -12,9 +13,6 @@ const routes: Array<RouteRecordRaw> = [
         name: 'settings',
         redirect: '/settings/basic',
         component: Settings,
-        // meta: {
-        //     keepAlive: true
-        // },
         children: [
             {
                 path: '/settings/basic',

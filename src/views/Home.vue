@@ -6,7 +6,11 @@
     <Content>
       <router-view #="{ Component }">
         <keep-alive>
-          <component v-if="routerConfig.meta.keepAlive" :is="Component" />
+          <component
+            v-if="routerConfig.meta.keepAlive"
+            :key="routerConfig.name"
+            :is="Component"
+          />
         </keep-alive>
         <component v-if="!routerConfig.meta.keepAlive" :is="Component" />
       </router-view>
