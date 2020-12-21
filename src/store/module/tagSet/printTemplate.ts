@@ -28,29 +28,15 @@ const defaultState: InitState = {
     pageInfo: [
       {
         id: '1',
-        dataItemName: 1,
-        edit: 1,
-        required: 1,
-        keyType: 1,
-        invoicesItem: 1,
-        detailsItem: 1,
-        tagItem: 1,
-        invoicesCode: 1,
-        code: 1,
-        status: 1,
+        name: '1',
+        createTime: '1',
+        status: '1',
       },
       {
-        id: '2',
-        dataItemName: 2,
-        edit: 1,
-        required: 1,
-        keyType: 2,
-        invoicesItem: 1,
-        detailsItem: 1,
-        tagItem: 1,
-        invoicesCode: 1,
-        code: 1,
-        status: 1,
+        id: '1',
+        name: '1',
+        createTime: '1',
+        status: '1',
       },
     ]
   },
@@ -67,7 +53,7 @@ export default {
   getters: {
   },
   actions: {
-    fetchDataItemList({ state }, payload) {
+    fetchPrintTemplateList({ state }, payload) {
       console.log(payload);
 
     }

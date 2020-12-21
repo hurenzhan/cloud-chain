@@ -1,6 +1,7 @@
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 import tagSet from './tagSet'
+import settings from './settings'
 
 const Home: Component = () => import(/* webpackChunkName: "about" */ '@/views/Home.vue')
 const Invoices: Component = () => import(/* webpackChunkName: "about" */ '@/views/invoices/Index.vue')
@@ -13,10 +14,11 @@ const routes: Array<RouteRecordRaw> = [
         children: [
             {
                 path: '/home',
-                name: '/home',
+                name: 'home',
                 component: Invoices
             },
-            ...tagSet
+            ...tagSet,
+            ...settings
         ]
     },
 ]

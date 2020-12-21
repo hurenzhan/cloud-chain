@@ -1,8 +1,8 @@
 <template>
   <div class="ln-d-flex ln-justify-c-between">
-    <h1>云标签</h1>
+    <router-link to="/home"><h1>云标签</h1></router-link>
     <Space :size="20">
-      <router-link to="/login" class="ln-clear-a"
+      <router-link to="/settings" class="ln-clear-a"
         ><SettingOutlined :style="{ fontSize: '18px' }"
       /></router-link>
       <Button type="primary">邀请</Button>
@@ -33,10 +33,7 @@
               </Space>
             </div>
             <div class="ln-border-top">
-              <Space
-                :size="8"
-                class="ln-px-16 ln-py-8 ln-cursor-pointer"
-              >
+              <Space :size="8" class="ln-px-16 ln-py-8 ln-cursor-pointer">
                 <LogoutOutlined />
                 <span>退出登录</span>
               </Space>

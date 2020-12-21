@@ -8,7 +8,7 @@
           </Button>
         </Col>
         <Col>
-          <Button type="primary" @click="visible = true">创建标签</Button>
+          <Button type="primary" @click="visible = true">新增</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
@@ -31,24 +31,10 @@
             <template #id="{ index }">
               <span>{{ index + 1 }}</span>
             </template>
-            <template #tagName="{ text }">
-              <span> {{ text }}</span>
-            </template>
-            <template #createTime="{ text }">
-              <span> {{ text }}</span>
-            </template>
-            <template #createName="{ text }">
-              <span> {{ text }}</span>
-            </template>
-            <template #status="{ text }">
-              <span> {{ text }}</span>
-            </template>
             <template #action>
               <Space :size="8">
                 <span>编辑</span>
-                <router-link to="/tagList/dataItem">数据项</router-link>
-                <router-link to="/tagList/boxesRule">装箱规则</router-link>
-                <router-link to="/tagList/printTemplate">打印模板</router-link>
+                <span>设置模板</span>
                 <span>启用</span>
               </Space>
             </template>
@@ -58,12 +44,12 @@
     </Space>
     <Modal
       v-model:visible="visible"
-      title="创建标签"
+      title="新增模板"
       @ok="handleCreateTag"
       @cancel="resetFields"
     >
       <Form :label-col="labelCol" :wrapper-col="wrapperCol">
-        <FormItem label="标签名称" :="validateInfos.name">
+        <FormItem label="模板名称" :="validateInfos.name">
           <Input v-model:value="modelRef.name" />
         </FormItem>
       </Form>
@@ -107,19 +93,14 @@ const columns = [
     slots: { customRender: 'id' },
   },
   {
-    title: '标签名称',
-    dataIndex: 'tagName',
-    key: 'tagName',
+    title: '模板名称',
+    dataIndex: 'name',
+    key: 'name',
   },
   {
     title: '创建时间',
     dataIndex: 'createTime',
     key: 'createTime',
-  },
-  {
-    title: '创建人',
-    key: 'createName',
-    dataIndex: 'createName',
   },
   {
     title: '状态',
@@ -134,7 +115,7 @@ const columns = [
 ];
 
 export default defineComponent({
-  name: 'tagList',
+  name: 'printTemplate',
 
   components: {
     Row,
@@ -151,12 +132,12 @@ export default defineComponent({
 
   setup() {
     // 数据流
-    const { getState, getActions } = mapStore('tagList');
+    const { getState, getActions } = mapStore('printTemplate');
     const { searchCondition, tableData } = getState([
       'searchCondition',
       'tableData',
     ]);
-    const { fetchTagList } = getActions(['fetchTagList']);
+    const { fetchTagList } = getActions(['printTemplate']);
     // 组件数据
     const state: StateType = reactive({
       visible: false,
@@ -169,7 +150,7 @@ export default defineComponent({
       name: [
         {
           required: true,
-          message: '标签名称不能为空！',
+          message: '模板名称名称不能为空！',
         },
       ],
     });
