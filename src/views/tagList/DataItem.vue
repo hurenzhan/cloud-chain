@@ -54,7 +54,6 @@ import { RecordType } from '@/types/common';
 import ModalAddItem from './components/ModalAddItem.vue';
 
 interface StateType {
-  editingKey: string;
   visible: boolean;
 }
 
@@ -155,7 +154,6 @@ export default defineComponent({
     const { fetchDataItemList } = getActions(['fetchDataItemList']);
     // 组件数据
     const state: StateType = reactive({
-      editingKey: '',
       visible: false,
     });
     //表格方法

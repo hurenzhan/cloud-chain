@@ -49,23 +49,19 @@
           </div>
         </Space>
       </Sider>
-      <Layout>
-        <Header> 基本信息 </Header>
-        <Content>
-          <router-view #="{ Component }">
-            <keep-alive>
-              <component
-                v-if="routerConfig.meta.keepAlive"
-                :key="routerConfig.name"
-                :is="Component"
-              />
-            </keep-alive>
-            <component v-if="!routerConfig.meta.keepAlive" :is="Component" />
-          </router-view>
-        </Content>
+      <Layout class="content__layout">
+        <router-view #="{ Component }">
+          <keep-alive>
+            <component
+              v-if="routerConfig.meta.keepAlive"
+              :key="routerConfig.name"
+              :is="Component"
+            />
+          </keep-alive>
+          <component v-if="!routerConfig.meta.keepAlive" :is="Component" />
+        </router-view>
       </Layout>
     </Layout>
-    {{ routerConfig.meta.keepAlive }}
   </div>
 </template>
 
@@ -87,6 +83,7 @@ interface State {
 
 export default defineComponent({
   name: 'settings',
+
   components: {
     Layout,
     Header,
@@ -98,6 +95,7 @@ export default defineComponent({
     BarcodeOutlined,
     TagOutlined,
   },
+  
   setup() {
     const state = reactive<State>({
       routerConfig: useRoute(),
@@ -109,14 +107,9 @@ export default defineComponent({
 });
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 @import '~@/styles/utils';
 .settings__content {
-  .ant-layout-header {
-    background: @white;
-    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-  }
   .ant-layout-sider {
     background: @white;
     flex: none !important;
@@ -135,6 +128,12 @@ export default defineComponent({
     color: @black;
     a {
       color: @black;
+    }
+  }
+  .content__layout {
+    background: @white;
+    .ant-layout-content {
+      padding: 24px;
     }
   }
 }

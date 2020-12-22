@@ -3,7 +3,7 @@ import { Module } from 'vuex'
 // import { getToken } from '@/libs/utils'
 // import { loginDispatch } from '@/service/login'
 
-// interface InitState {
+// interface InitStateType {
 // }
 
 const defaultState = {

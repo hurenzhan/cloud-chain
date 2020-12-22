@@ -1,6 +1,5 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { getToken } from '@/libs/utils'
 // import { loginDispatch } from '@/service/login'
 
 interface TableData {
@@ -28,15 +27,15 @@ const defaultState: InitStateType = {
     pageInfo: [
       {
         id: '1',
-        name: '1',
-        createTime: '1',
+        ruleName: '1',
+        boxesRule: '1',
         status: '1',
       },
       {
-        id: '1',
-        name: '1',
-        createTime: '1',
-        status: '1',
+        id: '2',
+        ruleName: '2',
+        boxesRule: '2',
+        status: '2',
       },
     ]
   },
@@ -53,9 +52,8 @@ export default {
   getters: {
   },
   actions: {
-    fetchPrintTemplateList({ state }, payload) {
+    fetchBasicTagRuleList({ state }, payload) {
       console.log(payload);
-
     }
   }
 } as Module<any, any>

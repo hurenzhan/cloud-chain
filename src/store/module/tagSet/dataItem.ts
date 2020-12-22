@@ -13,12 +13,12 @@ interface SearchConditionType {
   pageSize: number;
 }
 
-interface InitState {
+interface InitStateType {
   searchCondition: SearchConditionType;
   tableData: TableData;
 }
 
-const defaultState: InitState = {
+const defaultState: InitStateType = {
   searchCondition: {
     pageNo: 1,
     pageSize: 10
@@ -60,7 +60,7 @@ export default {
   namespaced: true,
   state: defaultState,
   mutations: {
-    save(state: InitState, payload: RecordType) {
+    save(state: InitStateType, payload: RecordType) {
       // Object.assign(state, payload)
     }
   },

@@ -14,12 +14,12 @@ import { RecordType } from '@/types/common'
 import { getToken } from '@/libs/utils'
 import { testDispatch } from '@/service/common'
 
-interface InitState {
+interface InitStateType {
   token: string | null;
   loginTest: string;
 }
 
-const defaultState: InitState = {
+const defaultState: InitStateType = {
   token: getToken(),
   loginTest: 'loginTest',
 }
@@ -28,12 +28,12 @@ export default {
   namespaced: true,
   state: defaultState,
   mutations: {
-    save(state: InitState, payload: RecordType) {
+    save(state: InitStateType, payload: RecordType) {
       Object.assign(state, payload)
     }
   },
   getters: {
-    loginTestGetters: (state: InitState) => {
+    loginTestGetters: (state: InitStateType) => {
       console.log(state.token);
 
       return state.token

@@ -1,6 +1,5 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { getToken } from '@/libs/utils'
 // import { loginDispatch } from '@/service/login'
 
 interface TableData {
@@ -29,14 +28,16 @@ const defaultState: InitStateType = {
       {
         id: '1',
         name: '1',
-        createTime: '1',
+        phone: '1',
+        role: '1',
         status: '1',
       },
       {
-        id: '1',
-        name: '1',
-        createTime: '1',
-        status: '1',
+        id: '2',
+        name: '2',
+        phone: '2',
+        role: '2',
+        status: '2',
       },
     ]
   },
@@ -53,9 +54,8 @@ export default {
   getters: {
   },
   actions: {
-    fetchPrintTemplateList({ state }, payload) {
+    fetchUserList({ state }, payload) {
       console.log(payload);
-
     }
   }
 } as Module<any, any>
