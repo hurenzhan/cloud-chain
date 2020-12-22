@@ -1,14 +1,10 @@
 <template>
-  <div class="tag-list__content">
+  <SettingsHeader> 成员管理 </SettingsHeader>
+  <Content>
     <Space direction="vertical" :size="20" class="ln-w-100">
-      <Row type="flex" justify="space-between" align="middle">
-        <Col
-          ><Button @click="pageBack">
-            <template #icon><LeftOutlined /></template>返回
-          </Button>
-        </Col>
+      <Row type="flex" justify="end" align="middle">
         <Col>
-          <Button type="link" @click="visible = true">+ 添加数据项</Button>
+          <Button type="primary" @click="visible = true">新增</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
@@ -40,18 +36,18 @@
         </Col>
       </Row>
     </Space>
-    <ModalAddItem v-model:visible="visible" />
-  </div>
+  </Content>
+  <ModalAddRule v-model:visible="visible" />
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, toRefs, onMounted } from 'vue';
-import { Row, Col, Button, Table, Space } from 'ant-design-vue';
-import { LeftOutlined } from '@ant-design/icons-vue';
+import { Row, Col, Button, Table, Space, Layout } from 'ant-design-vue';
 import mapStore from '@/libs/mapStore';
 import { pageBack } from '@/libs/utils';
 import { RecordType } from '@/types/common';
-import ModalAddItem from './components/ModalAddItem.vue';
+import SettingsHeader from './components/SettingsHeader.vue';
+import ModalAddRule from './components/ModalAddRule.vue';
 
 interface StateType {
   visible: boolean;
@@ -61,63 +57,52 @@ interface ModelRefType {
   name: string;
 }
 
+const { Content } = Layout;
+
 const columns: RecordType[] = [
   {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
+    title: '规则名称',
+    dataIndex: 'ruleName',
+    key: 'ruleName',
   },
   {
-    title: '数据项名称',
-    dataIndex: 'dataItemName',
-    key: 'dataItemName',
+    title: '常量前缀',
+    dataIndex: 'prefix',
+    key: 'prefix',
   },
   {
-    title: '允许编辑',
-    dataIndex: 'edit',
-    key: 'edit',
-    slots: { customRender: 'edit' },
+    title: '日期',
+    dataIndex: 'date',
+    key: 'date',
+    slots: { customRender: 'date' },
   },
   {
-    title: '必填',
-    dataIndex: 'required',
-    key: 'required',
-    slots: { customRender: 'required' },
+    title: '单号',
+    dataIndex: 'order',
+    key: 'order',
+    slots: { customRender: 'order' },
   },
   {
-    title: '字段类型',
-    dataIndex: 'keyType',
-    key: 'keyType',
+    title: '流水号',
+    dataIndex: 'serialNumber',
+    key: 'serialNumber',
+    slots: { customRender: 'serialNumber' },
   },
   {
-    title: '是否单据项',
-    dataIndex: 'invoicesItem',
-    key: 'invoicesItem',
-    slots: { customRender: 'invoicesItem' },
+    title: '流水号长度',
+    dataIndex: 'serialNumberLength',
+    key: 'serialNumberLength',
   },
   {
-    title: '是否明细项',
-    dataIndex: 'detailsItem',
-    key: 'detailsItem',
-    slots: { customRender: 'detailsItem' },
+    title: '随机码',
+    dataIndex: 'randomCode',
+    key: 'randomCode',
+    slots: { customRender: 'randomCode' },
   },
   {
-    title: '是否标签项',
-    dataIndex: 'tagItem',
-    key: 'tagItem',
-    slots: { customRender: 'tagItem' },
-  },
-  {
-    title: '是否单据号',
-    dataIndex: 'invoicesCode',
-    key: 'invoicesCode',
-    slots: { customRender: 'invoicesCode' },
-  },
-  {
-    title: '原厂料号',
-    dataIndex: 'code',
-    key: 'code',
-    slots: { customRender: 'code' },
+    title: '随机码长度',
+    dataIndex: 'randomCodeLength',
+    key: 'randomCode',
   },
   {
     title: '状态',
@@ -138,20 +123,21 @@ export default defineComponent({
     Row,
     Col,
     Button,
-    LeftOutlined,
     Table,
     Space,
-    ModalAddItem,
+    ModalAddRule,
+    Content,
+    SettingsHeader
   },
 
   setup() {
     // 数据流
-    const { getState, getActions } = mapStore('dataItem');
+    const { getState, getActions } = mapStore('settingsCodeRule');
     const { searchCondition, tableData } = getState([
       'searchCondition',
       'tableData',
     ]);
-    const { fetchDataItemList } = getActions(['fetchDataItemList']);
+    const { fetchCodeRuleList } = getActions(['fetchCodeRuleList']);
     // 组件数据
     const state: StateType = reactive({
       visible: false,
@@ -169,7 +155,7 @@ export default defineComponent({
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchDataItemList(searchCondition.value);
+      fetchCodeRuleList(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
@@ -178,7 +164,7 @@ export default defineComponent({
 
     // 生命周期
     onMounted(() => {
-      fetchDataItemList();
+      fetchCodeRuleList();
     });
 
     return {

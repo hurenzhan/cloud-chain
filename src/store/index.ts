@@ -15,6 +15,6 @@ export default createStore({
     login,
     ...home,
     ...tagSet,
-    ...settings
+    ...settings,
   }
 })
