@@ -27,14 +27,14 @@ const defaultState: InitStateType = {
     pageInfo: [
       {
         id: '1',
-        ruleName: '1',
-        boxesRule: '1',
+        type: '1',
+        brandName: '品牌1',
         status: '1',
       },
       {
         id: '2',
-        ruleName: '2',
-        boxesRule: '2',
+        type: '2',
+        brandName: '品牌2',
         status: '2',
       },
     ]

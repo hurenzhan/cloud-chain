@@ -25,6 +25,9 @@ export default defineComponent({
   z-index: 1;
   padding: 0 24px;
   font-size: 18px;
+  .anticon {
+    font-size: 16px;
+  }
 }
 </style>
 

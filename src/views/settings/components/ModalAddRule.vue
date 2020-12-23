@@ -9,30 +9,69 @@
       </FormItem>
       <FormItem label="常量前缀">
         <Group name="radioGroup" v-model:value="modelRef.date">
-          <Radio :value="1"> 是 </Radio>
-          <Radio :value="0"> 否 </Radio>
+          <Radio
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.name }}
+          </Radio>
         </Group>
       </FormItem>
       <FormItem label="单号">
         <Group name="radioGroup" v-model:value="modelRef.order">
-          <Radio :value="1"> 是 </Radio>
-          <Radio :value="0"> 否 </Radio>
+          <Radio
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.name }}
+          </Radio>
         </Group>
       </FormItem>
       <FormItem label="流水号">
         <Group
           name="radioGroup"
-          @change="(e) => handleRadioChange(e.target.value, 'serialNumberLength')"
+          @change="
+            (e) => handleRadioChange(e.target.value, 'serialNumberLength')
+          "
           v-model:value="modelRef.serialNumber"
         >
-          <Radio :value="1"> 是 </Radio>
-          <Radio :value="0"> 否 </Radio>
+          <Radio
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.name }}
+          </Radio>
         </Group>
       </FormItem>
       <FormItem label="流水号长度" :="validateInfos.serialNumberLength">
         <Input
           v-model:value="modelRef.serialNumberLength"
           :disabled="!modelRef.serialNumber"
+          placeholder="请输入"
+        />
+      </FormItem>
+      <FormItem label="随机码">
+        <Group
+          name="radioGroup"
+          @change="(e) => handleRadioChange(e.target.value, 'randomCodeLength')"
+          v-model:value="modelRef.randomCode"
+        >
+          <Radio
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.name }}
+          </Radio>
+        </Group>
+      </FormItem>
+      <FormItem label="随机码长度" :="validateInfos.randomCodeLength">
+        <Input
+          v-model:value="modelRef.randomCodeLength"
+          :disabled="!modelRef.randomCode"
           placeholder="请输入"
         />
       </FormItem>
@@ -110,6 +149,20 @@ export default defineComponent({
       return Promise.resolve();
     };
 
+    const validatorRandomCode = async (rule: any, value: any) => {
+      const isInput = modelRef.randomCode;
+      if (!isInput) {
+        return Promise.resolve();
+      }
+      if (value === '' || value === undefined) {
+        return Promise.reject('随机码长度不能为空！');
+      }
+      if (!/^[0-9]+$/g.test(value)) {
+        return Promise.reject('只能包含数字！');
+      }
+      return Promise.resolve();
+    };
+
     const rulesRef = reactive({
       name: [
         {
@@ -132,6 +185,11 @@ export default defineComponent({
           validator: validatorSerialNumber,
         },
       ],
+      randomCodeLength: [
+        {
+          validator: validatorRandomCode,
+        },
+      ],
     });
     const { resetFields, validate, validateInfos } = useForm(
       modelRef,
@@ -142,10 +200,13 @@ export default defineComponent({
       value: string,
       cleanKey: 'serialNumberLength' | 'randomCodeLength'
     ) => {
-      if (!value) modelRef[cleanKey] = '';
+      if (!value) {
+        validate(cleanKey);
+        modelRef[cleanKey] = '';
+      }
     };
 
-    // 处理标签创建
+    // 处理数据项创建
     const handleAddDataItem = () => {
       validate()
         .then(() => {

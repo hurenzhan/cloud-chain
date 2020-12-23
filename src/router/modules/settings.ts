@@ -6,6 +6,7 @@ const SettingBasic: Component = () => import(/* webpackChunkName: "about" */ '@/
 const User: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/User.vue')
 const CodeRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/CodeRule.vue')
 const BasicTagRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/BasicTagRule.vue')
+const BarcodeRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/BarcodeRule.vue')
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -45,6 +46,11 @@ const routes: Array<RouteRecordRaw> = [
                 meta: {
                     keepAlive: true
                 }
+            },
+            {
+                path: '/settings/basicTagRule/barcodeRule',
+                name: 'settingsBarcodeRule',
+                component: BarcodeRule,
             },
         ]
     },
