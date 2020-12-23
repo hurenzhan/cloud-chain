@@ -1,12 +1,12 @@
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-const TagList: Component = () => import(/* webpackChunkName: "about" */ '@/views/tagList/Index.vue')
 const Settings: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/Index.vue')
 const SettingBasic: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/Basic.vue')
 const User: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/User.vue')
 const CodeRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/CodeRule.vue')
 const BasicTagRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/BasicTagRule.vue')
 const BarcodeRule: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/BarcodeRule.vue')
+const BarcodeDataItem: Component = () => import(/* webpackChunkName: "about" */ '@/views/settings/BarcodeDataItem.vue')
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -51,6 +51,11 @@ const routes: Array<RouteRecordRaw> = [
                 path: '/settings/basicTagRule/barcodeRule',
                 name: 'settingsBarcodeRule',
                 component: BarcodeRule,
+            },
+            {
+                path: '/settings/basicTagRule/barcodeRule/dataItem',
+                name: 'settingsBarcodeDataItem',
+                component: BarcodeDataItem,
             },
         ]
     },

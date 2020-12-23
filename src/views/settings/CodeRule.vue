@@ -1,5 +1,5 @@
 <template>
-  <SettingsHeader> 成员管理 </SettingsHeader>
+  <SettingsHeader> 编码规则 </SettingsHeader>
   <Content>
     <Space direction="vertical" :size="20" class="ln-w-100">
       <Row type="flex" justify="end" align="middle">

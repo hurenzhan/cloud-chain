@@ -1,6 +1,6 @@
 <template>
   <SettingsHeader
-    ><LeftOutlined @click="pageBack" /> 品牌-{{ routerInfo.query.brandName }}
+    ><LeftOutlined @click="pageBack" /> 数据项-{{ routerInfo.query.name }}
   </SettingsHeader>
   <Content>
     <Space direction="vertical" :size="20" class="ln-w-100">
@@ -47,20 +47,20 @@
     @cancel="resetFields"
   >
     <Form :label-col="labelCol" :wrapper-col="wrapperCol">
-      <FormItem label="类型" :="validateInfos.type">
-        <Select v-model:value="modelRef.type" placeholder="请选择">
-          <Option value="0">一维码</Option>
-          <Option value="1">二维码</Option>
-        </Select>
-      </FormItem>
       <FormItem label="名称" :="validateInfos.name">
         <Input v-model:value="modelRef.name" placeholder="请输入" />
       </FormItem>
-      <FormItem label="分隔符">
-        <Input v-model:value="modelRef.separator" placeholder="请输入" />
+      <FormItem label="名称">
+        <Group name="radioGroup" v-model:value="modelRef.isCode">
+          <Radio :value="1"> 是 </Radio>
+          <Radio :value="0"> 否 </Radio>
+        </Group>
       </FormItem>
-      <FormItem label="扫描匹配模式">
-        <TextArea v-model:value="modelRef.pattern" placeholder="请输入" />
+      <FormItem label="位置" :="validateInfos.position">
+        <Input v-model:value="modelRef.position" placeholder="请输入" />
+      </FormItem>
+      <FormItem label="长度" :="validateInfos.length">
+        <Input v-model:value="modelRef.length" placeholder="请输入" />
       </FormItem>
     </Form>
   </Modal>
@@ -81,11 +81,11 @@ import {
   Space,
   Modal,
   Form,
-  Select,
   Row,
   Col,
   Button,
   Input,
+  Radio,
 } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import SettingsHeader from './components/SettingsHeader.vue';
@@ -98,10 +98,7 @@ import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 const { Content } = Layout;
 const { confirm } = Modal;
 const { Item: FormItem } = Form;
-const { Option } = Select;
-const { TextArea } = Input;
-
-console.log(TextArea, 'Textarea');
+const { Group } = Radio;
 
 interface StateType {
   visible: boolean;
@@ -109,27 +106,17 @@ interface StateType {
 }
 
 interface ModelRefType {
-  type: string | null;
   name: string;
-  separator: string;
-  pattern: string;
+  isCode: number;
+  position: string;
+  length: string;
 }
 
 const columns: RecordType[] = [
   {
-    title: '类型',
-    dataIndex: 'type',
-    key: 'type',
-  },
-  {
     title: '名称',
     dataIndex: 'name',
     key: 'name',
-  },
-  {
-    title: '分隔符',
-    dataIndex: 'separator',
-    key: 'separator',
   },
   {
     title: '是否包含原厂料号',
@@ -137,9 +124,14 @@ const columns: RecordType[] = [
     key: 'isCode',
   },
   {
-    title: '扫描匹配模式',
-    dataIndex: 'pattern',
-    key: 'pattern',
+    title: '位置',
+    dataIndex: 'position',
+    key: 'position',
+  },
+  {
+    title: '长度',
+    dataIndex: 'length',
+    key: 'length',
   },
   {
     title: '状态',
@@ -149,12 +141,13 @@ const columns: RecordType[] = [
   {
     title: '操作',
     key: 'action',
+    width: 110,
     slots: { customRender: 'action' },
   },
 ];
 
 export default defineComponent({
-  name: 'settingBasicTagRule',
+  name: 'barcodeDataItem',
 
   components: {
     Table,
@@ -162,8 +155,6 @@ export default defineComponent({
     SettingsHeader,
     Content,
     Modal,
-    Select,
-    Option,
     Form,
     FormItem,
     Row,
@@ -171,17 +162,18 @@ export default defineComponent({
     Button,
     LeftOutlined,
     Input,
-    TextArea,
+    Radio,
+    Group,
   },
 
   setup() {
     // 数据流
-    const { getState, getActions } = mapStore('settingsBarcodeRule');
+    const { getState, getActions } = mapStore('settingsBarcodeDataItem');
     const { searchCondition, tableData } = getState([
       'searchCondition',
       'tableData',
     ]);
-    const { fetchBarcodeRuleList } = getActions(['fetchBarcodeRuleList']);
+    const { fetchDataItemList } = getActions(['fetchDataItemList']);
     // 组件数据
     const state = reactive<StateType>({
       visible: false,
@@ -192,7 +184,7 @@ export default defineComponent({
       handleStatus(id: number, status: number) {
         console.log(id, status);
         confirm({
-          title: '是否启用/禁用该条码规则！',
+          title: '是否启用/禁用该数据项！',
           icon: createVNode(ExclamationCircleOutlined),
           onOk() {
             return new Promise((resolve, reject) => {
@@ -209,7 +201,7 @@ export default defineComponent({
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchBarcodeRuleList(searchCondition.value);
+      fetchDataItemList(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
@@ -217,26 +209,38 @@ export default defineComponent({
     };
 
     // 表单
-    const modelRef: ModelRefType = reactive({
-      type: null,
+    const modelRef = reactive<ModelRefType>({
       name: '',
-      separator: '',
-      pattern: '',
+      isCode: 1,
+      position: '',
+      length: '',
     });
 
     const rulesRef = reactive({
-      type: [
-        {
-          required: true,
-          message: '类型不能为空！',
-          type: 'string',
-        },
-      ],
       name: [
         {
           required: true,
           message: '名称不能为空！',
-          type: 'string',
+        },
+      ],
+      position: [
+        {
+          required: true,
+          message: '位置不能为空！',
+        },
+        {
+          pattern: /^[0-9]+$/g,
+          message: '只能包含数字！',
+        },
+      ],
+      length: [
+        {
+          required: true,
+          message: '长度不能为空！',
+        },
+        {
+          pattern: /^[0-9]+$/g,
+          message: '只能包含数字！',
         },
       ],
     });
@@ -258,7 +262,7 @@ export default defineComponent({
 
     // 生命周期
     onMounted(() => {
-      fetchBarcodeRuleList();
+      fetchDataItemList();
     });
 
     return {

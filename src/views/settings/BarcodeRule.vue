@@ -32,7 +32,10 @@
                 <a @click="tableAction.handleStatus(record.id, record.status)">
                   {{ record.status ? '启用' : '禁用' }}
                 </a>
-                <router-link to=""></router-link>
+                <router-link
+                  :to="`/settings/basicTagRule/barcodeRule/dataItem?id=${record.id}&name=${record.name}`"
+                  >数据项</router-link
+                >
               </Space>
             </template>
           </Table>
@@ -101,8 +104,6 @@ const { Item: FormItem } = Form;
 const { Option } = Select;
 const { TextArea } = Input;
 
-console.log(TextArea, 'Textarea');
-
 interface StateType {
   visible: boolean;
   routerInfo: RouteLocationNormalizedLoaded;
@@ -149,6 +150,7 @@ const columns: RecordType[] = [
   {
     title: '操作',
     key: 'action',
+    width: 160,
     slots: { customRender: 'action' },
   },
 ];

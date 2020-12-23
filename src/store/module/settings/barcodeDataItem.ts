@@ -27,27 +27,19 @@ const defaultState: InitStateType = {
     pageInfo: [
       {
         id: '1',
-        ruleName: 1,
-        prefix: 1,
-        date: 1,
-        order: 1,
-        serialNumber: 1,
-        serialNumberLength: 1,
-        randomCode: 1,
-        randomCodeLength: 1,
-        status: 1,
+        name: '1',
+        isCode: '1',
+        position: '1',
+        length: '1',
+        status: '1',
       },
       {
         id: '2',
-        ruleName: 2,
-        prefix: 2,
-        date: 2,
-        order: 2,
-        serialNumber: 2,
-        serialNumberLength: 2,
-        randomCode: 2,
-        randomCodeLength: 2,
-        status: 2,
+        name: '2',
+        isCode: '2',
+        position: '2',
+        length: '2',
+        status: '2'
       },
     ]
   },
@@ -64,8 +56,8 @@ export default {
   getters: {
   },
   actions: {
-    fetchCodeRuleList({ state }, payload) {
-      console.log(state, payload);
+    fetchDataItemList({ state }, payload) {
+      console.log(payload);
     }
   }
 } as Module<any, any>
