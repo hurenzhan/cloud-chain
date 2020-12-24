@@ -1,7 +1,7 @@
 import home from './home'
-import invoices from './invoices'
+import navigate from './navigate'
 
 export default {
     home,
-    invoices
+    navigate,
 }

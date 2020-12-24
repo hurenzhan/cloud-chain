@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <Header>
+    <Header class="ln-border-bottom">
       <UserHeader />
     </Header>
     <Content>
@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from 'vue';
+import { defineComponent, reactive, toRefs, onMounted } from 'vue';
 import { useRoute, RouteLocationNormalizedLoaded } from 'vue-router';
 import UserHeader from '@/components/UserHeader.vue';
 import { Layout } from 'ant-design-vue';
@@ -41,6 +41,11 @@ export default defineComponent({
     const state = reactive<State>({
       routerConfig: useRoute(),
     });
+
+    onMounted(() => {
+      console.log(112);
+    });
+
     return {
       ...toRefs(state),
     };
@@ -52,7 +57,7 @@ export default defineComponent({
 @import '~@/styles/utils';
 .ant-layout-header {
   background: @white;
-  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  // box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
+  z-index: 2;
 }
 </style>

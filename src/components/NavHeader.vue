@@ -64,6 +64,10 @@ export default defineComponent({
 <style lang="less" scoped>
 @import '~@/styles/utils.less';
 .nav-header__content {
+  background: @white;
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  padding: 18px 50px;
   .nav__name {
     font-size: 18px;
     color: @0-0-0_85;
