@@ -6,11 +6,6 @@
         :key="domain.key"
         :label="index === 0 ? 'Domains' : ''"
         :name="['domains', index, 'value']"
-        :rules="{
-          required: true,
-          message: 'domain can not be null',
-          trigger: 'change',
-        }"
       >
         <Input
           v-model:value="domain.value"
