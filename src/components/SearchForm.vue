@@ -1,21 +1,28 @@
 <template>
   <div class="search-form__content">
-    <Form ref="formRef" :model="dynamicValidateForm">
+    <Form ref="formRef" :model="domains">
       <FormItem
-        v-for="(domain, index) in dynamicValidateForm.domains"
-        :key="domain.key"
+        v-for="(value, key, index) in domains"
+        :key="key"
         :label="index === 0 ? 'Domains' : ''"
-        :name="['domains', index, 'value']"
+        :name="key"
+        :rules="[
+          {
+            required: true,
+            message: 'domain can not be null',
+            trigger: 'change',
+          },
+        ]"
       >
         <Input
-          v-model:value="domain.value"
+          v-model:value="domains[key]"
           placeholder="please input domain"
           style="width: 60%; margin-right: 8px"
         />
         <MinusCircleOutlined
-          v-if="dynamicValidateForm.domains.length > 1"
+          v-if="domains.length > 1"
           class="dynamic-delete-button"
-          :disabled="dynamicValidateForm.domains.length === 1"
+          :disabled="domains.length === 1"
           @click="removeDomain(domain)"
         />
       </FormItem>
@@ -32,10 +39,7 @@
         >
           Submit
         </Button>
-        <Button
-          style="margin-left: 10px"
-          @click="resetForm('dynamicValidateForm')"
-        >
+        <Button style="margin-left: 10px" @click="resetForm('dynamicValidateForm')">
           Reset
         </Button>
       </FormItem>
@@ -44,14 +48,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRefs, toRaw } from 'vue';
-import { Form, Input, Button } from 'ant-design-vue';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons-vue';
+import { defineComponent, reactive, ref, toRefs, toRaw } from "vue";
+import { Form, Input, Button } from "ant-design-vue";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons-vue";
 
 const { Item: FormItem } = Form;
 
 export default defineComponent({
-  name: 'searchForm',
+  name: "searchForm",
 
   components: {
     Form,
@@ -65,35 +69,36 @@ export default defineComponent({
   setup() {
     const formRef = ref(Form);
     const state: any = reactive({
-      dynamicValidateForm: {
-        domains: [],
-      },
+      domains: {},
     });
 
     const submitForm = () => {
+      console.log(formRef, "formRef");
+
       formRef.value
         .validate()
         .then(() => {
-          console.log('values', toRaw(state.dynamicValidateForm.domains));
+          console.log("values", toRaw(state.domains));
         })
         .catch((error: any) => {
-          console.log('error', error);
+          console.log("error", error);
         });
     };
     const resetForm = () => {
       formRef.value.resetFields();
     };
     const removeDomain = (item: any) => {
-      const index = state.dynamicValidateForm.domains.indexOf(item);
+      const index = state.domains.indexOf(item);
       if (index !== -1) {
-        state.dynamicValidateForm.domains.splice(index, 1);
+        state.domains.splice(index, 1);
       }
     };
     const addDomain = () => {
-      state.dynamicValidateForm.domains.push({
-        value: '',
-        key: Date.now(),
-      });
+      // state.domains.push({
+      //   value: '',
+      //   key: Date.now(),
+      // });
+      state.domains[Date.now()] = null;
     };
 
     return {
