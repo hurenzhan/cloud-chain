@@ -1,7 +1,7 @@
 import invoicesList from './invoicesList'
-import tagList from './tagList'
+import tagTab from './tagTab'
 
 export default {
     invoicesList,
-    tagList
+    tagTab
 }
