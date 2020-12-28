@@ -2,10 +2,10 @@
   <div class="ln-position-absolute-center">
     <h2 class="ln-mb-20">云标签</h2>
     <Form>
-      <FormItem v-bind="validateInfos.phone">
+      <FormItem v-bind="validateInfos.phoneNo">
         <TextInput
-          v-model:value="modelRef.phone"
-          @blur="validate('phone', { trigger: 'blur' }).catch(() => {})"
+          v-model:value="modelRef.phoneNo"
+          @blur="validate('phoneNo', { trigger: 'blur' }).catch(() => {})"
           placeholder="请输入手机号"
         />
       </FormItem>
@@ -16,27 +16,27 @@
           placeholder="请输入用户名"
         />
       </FormItem>
-      <FormItem v-bind="validateInfos.pass">
+      <FormItem v-bind="validateInfos.newPwd">
         <PassInput
-          v-model:value="modelRef.pass"
-          @blur="validate('pass', { trigger: 'blur' }).catch(() => {})"
+          v-model:value="modelRef.newPwd"
+          @blur="validate('newPwd', { trigger: 'blur' }).catch(() => {})"
           placeholder="请输入密码"
           autocomplete="off"
         />
       </FormItem>
-      <FormItem v-bind="validateInfos.checkPass">
+      <FormItem v-bind="validateInfos.password">
         <PassInput
-          v-model:value="modelRef.checkPass"
-          @blur="validate('checkPass', { trigger: 'blur' }).catch(() => {})"
+          v-model:value="modelRef.password"
+          @blur="validate('password', { trigger: 'blur' }).catch(() => {})"
           placeholder="请确认密码"
           autocomplete="off"
         />
       </FormItem>
-      <FormItem v-bind="validateInfos.verificationCode">
+      <FormItem v-bind="validateInfos.captcha">
         <VerificationCodeInput
-          v-model:value="modelRef.verificationCode"
+          v-model:value="modelRef.captcha"
           @blur="
-            validate('verificationCode', {
+            validate('captcha', {
               trigger: 'blur',
             }).catch(() => {})
           "
@@ -57,8 +57,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRaw } from 'vue';
-import { Form, Button } from 'ant-design-vue';
+import { defineComponent, reactive } from 'vue';
+import { Form, Button, notification } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import PassInput from './components/PassInput.vue';
 import TextInput from './components/TextInput.vue';
@@ -66,15 +66,17 @@ import VerificationCodeInput from './components/VerificationCodeInput.vue';
 import SubmitButton from './components/SubmitButton.vue';
 import { regs } from '@/libs/utils';
 import { RecordType } from '@/types/common';
+import { fetchCaptcha, loginDispatch } from '@/service/login';
+import { useRouter } from 'vue-router';
 
 const { Item: FormItem } = Form;
 
 interface StateType {
-  phone: number | null;
+  phoneNo: string;
   name: string | number;
-  pass: string | number;
-  checkPass: string | number;
-  verificationCode: number | null;
+  newPwd: string | number;
+  password: string | number;
+  captcha: number | null;
 }
 
 export default defineComponent({
@@ -91,23 +93,25 @@ export default defineComponent({
   },
 
   setup() {
+    // 组件数据
     const modelRef: StateType = reactive({
-      phone: null,
+      phoneNo: '',
       name: '',
-      pass: '',
-      checkPass: '',
-      verificationCode: null,
+      newPwd: '',
+      password: '',
+      captcha: null,
     });
+    const router = useRouter();
 
     const validatePass = async (rule: RecordType, value: any) => {
-      if (modelRef.pass !== value) {
+      if (modelRef.newPwd !== value) {
         return Promise.reject('两次输入密码不一致');
       }
       return Promise.resolve();
     };
 
     const rulesRef = reactive({
-      phone: [
+      phoneNo: [
         {
           required: true,
           message: '手机号不能为空',
@@ -124,13 +128,13 @@ export default defineComponent({
           message: '用户名不能为空',
         },
       ],
-      pass: [
+      newPwd: [
         {
           required: true,
           message: '密码不能为空',
         },
       ],
-      checkPass: [
+      password: [
         {
           required: true,
           message: '确认密码不能为空',
@@ -140,7 +144,7 @@ export default defineComponent({
           validator: validatePass,
         },
       ],
-      verificationCode: [
+      captcha: [
         {
           required: true,
           message: '验证码不能为空',
@@ -153,8 +157,13 @@ export default defineComponent({
     const onSubmit = (e: Event) => {
       e.preventDefault();
       validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
+        .then(async () => {
+          loginDispatch.use('register', { ...modelRef }).then(() => {
+            notification.success({
+              message: '注册成功',
+            });
+            router.push('/login');
+          });
         })
         .catch((err) => {
           console.log('error', err);
@@ -162,20 +171,24 @@ export default defineComponent({
     };
 
     const checkPhone = async () => {
-      return new Promise((resolve, reject) => {
-        validate('phone')
+      return new Promise((resolve) => {
+        validate('phoneNo')
           .then(() => {
             resolve(true);
           })
-          .catch((err) => {
-            reject(err);
+          .catch(() => {
+            resolve(false);
           });
       });
     };
 
     const getVerificationCode = async () => {
-      const isPhoneFormat = await checkPhone();
-      return isPhoneFormat;
+      if (await checkPhone()) {
+        const { phoneNo } = modelRef;
+        fetchCaptcha({ phoneNo });
+        return true;
+      }
+      return false;
     };
 
     return {

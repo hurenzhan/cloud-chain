@@ -3,13 +3,14 @@ module.exports = {
         host: 'localhost',
         port: 3000,
         proxy: {
-            '/api': {
-                target: 'https://dog.ceo',
+            '/ctag': {
+                target: 'http://8.136.148.160',
+                // target: 'https://dog.ceo',
                 // ws: true,
                 changeOrigin: true,
                 secure: false,
                 pathRewrite: {
-                    '^/api': '/api'
+                    '^/ctag': '/ctag'
                 },
             }
         },

@@ -1,17 +1,14 @@
 <template>
   <div class="login__input-pass">
-    <Input :type="inputType" size="large" :="attrs" />
-    <div class="login__input-pass-icon ln-cursor-pointer">
-      <EyeOutlined v-if="visible" @click="handleSwitchDisplay" />
-      <EyeInvisibleOutlined v-else @click="handleSwitchDisplay" />
-    </div>
+    <Password :type="inputType" size="large" :="attrs" />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, reactive, toRefs } from 'vue';
 import { Input } from 'ant-design-vue';
-import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons-vue';
+
+const { Password } = Input;
 
 interface StateType {
   visible: boolean;
@@ -22,9 +19,7 @@ export default defineComponent({
   name: 'passInput',
   inheritAttrs: false,
   components: {
-    Input,
-    EyeOutlined,
-    EyeInvisibleOutlined,
+    Password,
   },
   setup(props, { attrs }) {
     const state: StateType = reactive({
@@ -50,14 +45,8 @@ export default defineComponent({
 .login__input-pass {
   position: relative;
   width: @login-input-width;
-  .ant-input {
+  .ant-input-password {
     border: none;
-    padding-right: 32px;
-  }
-  &-icon {
-    position: absolute;
-    top: 0;
-    right: 14px;
   }
 }
 </style>

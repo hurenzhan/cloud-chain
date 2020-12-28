@@ -15,6 +15,8 @@ const defaultState: InitStateType = {
   loading: false
 }
 
+
+
 export default {
   namespaced: true,
   state: defaultState,
@@ -28,7 +30,13 @@ export default {
   actions: {
     // 登录
     async handleLogin({ commit }, payload: any) {
-      const login = await loginDispatch.use('login')
+      const res = await loginDispatch.use('login', payload)
+      console.log(res, 'login');
+
+    },
+    // 注册
+    fetchRegister({ commit }, payload: any) {
+      return loginDispatch.use('register', payload)
     },
     // // 退出登录
     // handleLogOut() {

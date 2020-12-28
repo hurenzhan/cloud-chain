@@ -1,9 +1,11 @@
-import axios, { AxiosInstance, AxiosRequestConfig, Canceler } from 'axios'
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Canceler } from 'axios'
 // import { Spin } from 'iview'
 import publicConfig from '@/config'
 import { getToken } from './utils'
 
 const CancelToken = axios.CancelToken
+
+import { notification } from 'ant-design-vue';
 
 class HttpRequest {
   private baseUrl: string
@@ -33,6 +35,18 @@ class HttpRequest {
     delete this.pending[key]
   }
 
+  verifyStatus(res: AxiosResponse<any>) {
+    const { code, message } = res.data
+    if (code !== 200) {
+      notification.error({
+        message: code,
+        description: message,
+      });
+      return false
+    }
+    return true
+  }
+
   // 设定拦截器
   interceptors(instance: AxiosInstance) {
     // 请求拦截器
@@ -56,12 +70,13 @@ class HttpRequest {
     // 响应请求的拦截器
     instance.interceptors.response.use(
       (res) => {
-        // Any status code that lie within the range of 2xx cause this function to trigger
-        // Do something with response data
         const key = res.config.url + '&' + res.config.method
         this.removePending(key)
         if (res.status === 200) {
-          return Promise.resolve(res.data)
+          if (this.verifyStatus(res)) {
+            return Promise.resolve(res.data)
+          }
+          return Promise.reject(res)
         } else {
           return Promise.reject(res)
         }

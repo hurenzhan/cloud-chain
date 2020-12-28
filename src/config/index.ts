@@ -9,7 +9,7 @@ export default {
   baseUrl: {
     // dev: 'https://dog.ceo',
     dev: 'http://localhost:3000',
-    pro: 'http://api.dev.yunlian.com:22000'
+    pro: 'http://8.136.148.160'
   },
   /**
    * @description 默认打开的首页的路由name值，默认为home
