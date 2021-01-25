@@ -1,11 +1,9 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { loginDispatch } from '@/service/login'
-
-interface TableData {
-  total: number;
-  pageInfo: any[];
-}
+import { PackageRulePage } from '@/types/tagPackage';
+import { codeRuleDispatch, tagDataItemDispatch, tagPackageDispatch } from '@/service';
+import { PackageCodeRuleInfo } from '@/types/codeRule';
+import { TagDataItemInfo } from '@/types/tagDataItem';
 
 interface SearchConditionType {
   pageNo: number;
@@ -14,7 +12,12 @@ interface SearchConditionType {
 
 interface InitStateType {
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  packageRulePageData: PackageRulePage | {};
+  loading: boolean;
+  loadingAction: boolean;
+  actionItem: undefined;
+  packageCodeRulePageData: PackageCodeRuleInfo[] | [];
+  tagDataItemList: TagDataItemInfo[];
 }
 
 const defaultState: InitStateType = {
@@ -22,23 +25,12 @@ const defaultState: InitStateType = {
     pageNo: 1,
     pageSize: 10
   },
-  tableData: {
-    total: 35,
-    pageInfo: [
-      {
-        id: '1',
-        ruleName: '1',
-        boxesRule: '1',
-        status: '1',
-      },
-      {
-        id: '2',
-        ruleName: '2',
-        boxesRule: '2',
-        status: '2',
-      },
-    ]
-  },
+  packageRulePageData: {},
+  loading: false,
+  loadingAction: false,
+  actionItem: undefined,
+  packageCodeRulePageData: [],
+  tagDataItemList: []
 }
 
 export default {
@@ -46,15 +38,36 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitStateType, payload: RecordType) {
-      // Object.assign(state, payload)
+      Object.assign(state, payload)
     }
   },
   getters: {
   },
   actions: {
-    fetchBoxesRuleList({ state }, payload) {
-      console.log(payload);
-
-    }
+    async fetchPackageRulePage({ state }, payload) {
+      state.loading = true
+      const [err, res] = await tagPackageDispatch.use('packageRulePage', payload)
+      if (err) return state.loading = false
+      state.packageRulePageData = res.data
+      state.loading = false
+    },
+    async fetchAction({ state }, payload) {
+      state.loadingAction = true
+      const actionType = payload.id ? 'update' : 'createPackageRule'
+      const [err] = await tagPackageDispatch.use(actionType, payload)
+      if (err) return state.loadingAction = false
+      state.loadingAction = false
+      return true
+    },
+    async fetchPackageCodeRulePage({ state }, payload) {
+      const [err, res] = await codeRuleDispatch.use('select', payload)
+      if (err) return
+      state.packageCodeRulePageData = res.data
+    },
+    async fetchTagDataItemList({ state }, payload) {
+      const [err, res] = await tagDataItemDispatch.use('select', payload)
+      if (err) return
+      state.tagDataItemList = res.data
+    },
   }
 } as Module<any, any>

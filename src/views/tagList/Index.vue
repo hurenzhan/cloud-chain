@@ -15,41 +15,40 @@
         <Col span="24">
           <Table
             rowKey="id"
+            :loading="loading"
             :columns="columns"
             @change="handleTableChange"
-            :data-source="tableData.pageInfo"
+            :data-source="tagPageData.pageInfo"
             :pagination="{
               current: searchCondition.pageNo,
               pageSize: searchCondition.pageSize,
               change: handlePagination,
-              total: tableData.total,
-              showTotal: () => `共 ${tableData.total} 条`,
+              total: tagPageData.total,
+              showTotal: () => `共 ${tagPageData.total} 条`,
               showSizeChanger: true,
               showQuickJumper: true,
             }"
           >
-            <template #id="{ index }">
-              <span>{{ index + 1 }}</span>
-            </template>
-            <template #tagName="{ text }">
-              <span> {{ text }}</span>
-            </template>
-            <template #createTime="{ text }">
-              <span> {{ text }}</span>
-            </template>
-            <template #createName="{ text }">
-              <span> {{ text }}</span>
-            </template>
             <template #status="{ text }">
-              <span> {{ text }}</span>
+              <span :class="`active-status-${text}`">{{
+                findDict(ACTIVE_DICT, text)
+              }}</span>
             </template>
-            <template #action>
+            <template #action="{ record }">
               <Space :size="8">
-                <span>编辑</span>
-                <router-link to="/tagList/dataItem">数据项</router-link>
-                <router-link to="/tagList/boxesRule">装箱规则</router-link>
+                <a @click="tableAction.edit(record)">编辑</a>
+                <router-link
+                  :to="`/tagList/dataItem?parentTagId=${record.parentTagId}&tagId=${record.id}`"
+                  >数据项</router-link
+                >
+                <router-link
+                  :to="`/tagList/boxesRule?parentTagId=${record.parentTagId}&tagId=${record.id}`"
+                  >装箱规则</router-link
+                >
                 <router-link to="/tagList/printTemplate">打印模板</router-link>
-                <span>启用</span>
+                <a @click="tableAction.handleStatus(record)">
+                  {{ record.status ? '禁用' : '启用' }}
+                </a>
               </Space>
             </template>
           </Table>
@@ -58,9 +57,11 @@
     </Space>
     <Modal
       v-model:visible="visible"
-      title="创建标签"
+      :title="`${modelRef.id ? '编辑' : '创建'}标签`"
+      :confirmLoading="loadingAction"
+      destroyOnClose
       @ok="handleCreateTag"
-      @cancel="resetFields"
+      @cancel="handleCancel"
     >
       <Form :label-col="labelCol" :wrapper-col="wrapperCol">
         <FormItem label="标签名称" :="validateInfos.name">
@@ -72,7 +73,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, toRaw } from 'vue';
+import {
+  defineComponent,
+  reactive,
+  toRefs,
+  toRaw,
+  onMounted,
+  watchEffect,
+} from 'vue';
 import {
   Row,
   Col,
@@ -86,8 +94,10 @@ import {
 import { LeftOutlined } from '@ant-design/icons-vue';
 import { useForm } from '@ant-design-vue/use';
 import mapStore from '@/libs/mapStore';
-import { pageBack } from '@/libs/utils';
+import { pageBack, findDict } from '@/libs/utils';
 import { RecordType } from '@/types/common';
+import { TagInfo } from '@/types/tagPackage';
+import { ACTIVE_DICT } from '@/libs/dicts';
 
 const { Item: FormItem } = Form;
 
@@ -96,6 +106,7 @@ interface StateType {
 }
 
 interface ModelRefType {
+  id: number | null;
   name: string;
 }
 
@@ -104,12 +115,11 @@ const columns = [
     title: 'ID',
     dataIndex: 'id',
     key: 'id',
-    slots: { customRender: 'id' },
   },
   {
     title: '标签名称',
-    dataIndex: 'tagName',
-    key: 'tagName',
+    dataIndex: 'name',
+    key: 'name',
   },
   {
     title: '创建时间',
@@ -125,10 +135,12 @@ const columns = [
     title: '状态',
     key: 'status',
     dataIndex: 'status',
+    slots: { customRender: 'status' },
   },
   {
     title: '操作',
     key: 'action',
+    width: 274,
     slots: { customRender: 'action' },
   },
 ];
@@ -151,18 +163,32 @@ export default defineComponent({
 
   setup() {
     // 数据流
-    const { getState, getActions } = mapStore('tagList');
-    const { searchCondition, tableData } = getState([
+    const { getState, getMutations, getActions } = mapStore('tagList');
+    const {
+      searchCondition,
+      tagPageData,
+      loading,
+      loadingAction,
+      actionItem,
+    } = getState([
       'searchCondition',
-      'tableData',
+      'tagPageData',
+      'loading',
+      'loadingAction',
+      'actionItem',
     ]);
-    const { fetchTagList } = getActions(['fetchTagList']);
+    const { save } = getMutations(['save']);
+    const { fetchTagPage, fetchAction } = getActions([
+      'fetchTagPage',
+      'fetchAction',
+    ]);
     // 组件数据
     const state: StateType = reactive({
       visible: false,
     });
     // 表单
     const modelRef: ModelRefType = reactive({
+      id: null,
       name: '',
     });
     const rulesRef = reactive({
@@ -178,33 +204,71 @@ export default defineComponent({
       rulesRef
     );
 
+    watchEffect(() => {
+      if (actionItem.value) {
+        Object.assign(modelRef, actionItem.value);
+      }
+    });
+
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchTagList(searchCondition.value);
+      searchCondition.value.pageSize = pagination.pageSize;
+      fetchTagPage(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
       handlePagination(pagination);
     };
+    //表格方法
+    const tableAction = reactive({
+      edit(record: TagInfo) {
+        const { id, name } = record;
+        save({ actionItem: { id, name } });
+        state.visible = true;
+      },
+      async handleStatus(record: TagInfo) {
+        const { id, status } = record;
+        await fetchAction({ id, status: 1 ^ status });
+        fetchTagPage(searchCondition.value);
+      },
+    });
     // 处理标签创建
     const handleCreateTag = () => {
-      validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
-        })
-        .catch((err) => {
-          console.log('error', err);
-        });
+      validate().then(async () => {
+        const params = {
+          ...toRaw(modelRef),
+          status: 1,
+          type: 0,
+          packageRuleId: 0,
+          packageRuleName: '',
+        };
+        const isCreate = await fetchAction(params);
+        if (isCreate) {
+          resetFields();
+          state.visible = false;
+          fetchTagPage(searchCondition.value);
+        }
+      });
     };
+
+    const handleCancel = () => {
+      if (actionItem) save({ actionItem: undefined });
+      resetFields();
+    };
+
+    // 生命周期
+    onMounted(() => {
+      fetchTagPage(searchCondition.value);
+    });
 
     return {
       ...toRefs(state),
       columns,
-      tableData,
+      tagPageData,
       pageBack,
       modelRef,
-      resetFields,
+      handleCancel,
       validateInfos,
       searchCondition,
       handlePagination,
@@ -212,6 +276,11 @@ export default defineComponent({
       handleCreateTag,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      loading,
+      loadingAction,
+      tableAction,
+      findDict,
+      ACTIVE_DICT,
     };
   },
 });

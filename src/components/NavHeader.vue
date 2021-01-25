@@ -2,18 +2,15 @@
   <div class="nav-header__content">
     <Row type="flex" justify="space-between" align="middle">
       <Col>
-        <Dropdown :trigger="['click']" placement="bottomLeft">
-          <span type="link" class="nav__name ln-cursor-pointer"
-            >销售单1 <CaretDownOutlined
-          /></span>
-          <template #overlay>
-            <Menu>
-              <MenuItem> 销售单1 </MenuItem>
-              <MenuItem> 销售单2 </MenuItem>
-              <MenuItem> 销售单3 </MenuItem>
-            </Menu>
-          </template>
-        </Dropdown>
+        <Select
+          @change="handleSwitch"
+          style="width: 180px"
+          placeholder="请选择标签"
+        >
+          <Option v-for="{ id, name } in tagList" :key="id" :value="id">{{
+            name
+          }}</Option>
+        </Select>
       </Col>
       <Col>
         <router-link class="tag-set__link" to="/tagList">标签设置</router-link>
@@ -23,35 +20,52 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from 'vue';
-import { Menu, Dropdown, Row, Col } from 'ant-design-vue';
-import { CaretDownOutlined } from '@ant-design/icons-vue';
+import { defineComponent, onActivated, reactive, toRaw, toRefs } from 'vue';
+import { Row, Col, Select } from 'ant-design-vue';
+import { TagInfo } from '@/types/tagPackage';
+import { tagPackageDispatch } from '@/service';
+import mapStore from '@/libs/mapStore';
 
-const { Item: MenuItem } = Menu;
-// import mapStore from '@/libs/mapStore';
+const { Option } = Select;
 
 interface StateType {
-  visible: boolean;
+  tagList: Array<TagInfo>;
 }
 
 export default defineComponent({
   name: 'navHeader',
   components: {
-    Menu,
-    MenuItem,
-    Dropdown,
-    CaretDownOutlined,
     Row,
     Col,
+    Select,
+    Option,
   },
   setup() {
+    // 数据流
+    const { getMutations } = mapStore('navigate');
+    const { save } = getMutations(['save']);
+
+    // 组件数据
     const state: StateType = reactive({
-      visible: false,
+      tagList: [],
     });
 
-    const handleSwitch = () => {
-      state.visible = false;
+    const handleSwitch = (id: number) => {
+      const activeTagItem = toRaw(
+        state.tagList?.find((item) => item.id === id)
+      );
+      save({ activeTagItem });
     };
+
+    const fetchTagPage = async () => {
+      const [err, res] = await tagPackageDispatch.use('tagAll');
+      if (err) return false;
+      state.tagList = res?.data;
+    };
+
+    onActivated(() => {
+      fetchTagPage();
+    });
 
     return {
       ...toRefs(state),

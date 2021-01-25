@@ -12,28 +12,34 @@
           <Table
             rowKey="id"
             :columns="columns"
+            :loading="loading"
             @change="handleTableChange"
-            :data-source="tableData.pageInfo"
+            :data-source="originTagPage.pageInfo"
             :pagination="{
               current: searchCondition.pageNo,
               pageSize: searchCondition.pageSize,
               change: handlePagination,
-              total: tableData.total,
-              showTotal: () => `共 ${tableData.total} 条`,
+              total: originTagPage.total,
+              showTotal: () => `共 ${originTagPage.total} 条`,
               showSizeChanger: true,
               showQuickJumper: true,
             }"
           >
+            <template #status="{ text }">
+              <span :class="`active-status-${text}`">{{
+                findDict(ACTIVE_DICT, text)
+              }}</span>
+            </template>
             <template #action="{ record }">
               <Space :size="8">
-                <a @click="tableAction.edit"> 编辑 </a>
-                <a @click="tableAction.handleStatus(record.id, record.status)">
-                  {{ record.status ? '启用' : '禁用' }}
+                <a @click="tableAction.edit(record)"> 编辑 </a>
+                <a @click="tableAction.handleStatus(record)">
+                  {{ record.status ? '禁用' : '启用' }}
                 </a>
-                <router-link
+                <!-- <router-link
                   :to="`/settings/basicTagRule/barcodeRule?id=${record.id}&brandName=${record.brandName}`"
                   >条码规则</router-link
-                >
+                > -->
               </Space>
             </template>
           </Table>
@@ -42,31 +48,29 @@
     </Space>
   </Content>
   <Modal
+    :confirmLoading="loadingAction"
     v-model:visible="visible"
     title="原厂标签规则新增"
     @ok="handleSubmitAddRule"
-    @cancel="resetFields"
+    @cancel="handleCancel"
   >
     <Form :label-col="labelCol" :wrapper-col="wrapperCol">
-      <FormItem label="类型" :="validateInfos.type">
+      <FormItem label="类型" :="validateInfos.typeName">
         <Select
-          v-model:value="modelRef.type"
+          v-model:value="modelRef.typeName"
           placeholder="请选择"
           @change="(value) => handleTypeChange(value)"
         >
-          <Option :value="0">通用</Option>
-          <Option :value="1">品牌</Option>
+          <Option value="通用">通用</Option>
+          <Option value="品牌">品牌</Option>
         </Select>
       </FormItem>
       <FormItem label="品牌" :="validateInfos.brandName">
-        <Select
+        <Input
           v-model:value="modelRef.brandName"
           placeholder="请选择"
-          :disabled="modelRef.type !== 1"
-        >
-          <Option value="0">品牌1</Option>
-          <Option value="1">品牌2</Option>
-        </Select>
+          :disabled="modelRef.typeName !== '品牌'"
+        />
       </FormItem>
     </Form>
   </Modal>
@@ -80,6 +84,7 @@ import {
   onMounted,
   createVNode,
   toRaw,
+  watchEffect,
 } from 'vue';
 import {
   Layout,
@@ -91,12 +96,16 @@ import {
   Row,
   Col,
   Button,
+  Input,
 } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import SettingsHeader from './components/SettingsHeader.vue';
 import mapStore from '@/libs/mapStore';
 import { RecordType } from '@/types/common';
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
+import { ACTIVE_DICT } from '@/libs/dicts';
+import { findDict } from '@/libs/utils';
+import { OriginTagInfo } from '@/types/originTag';
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -108,15 +117,17 @@ interface StateType {
 }
 
 interface ModelRefType {
-  type: number | null;
+  id: number | null;
+  typeName: string | null;
   brandName: string | null;
+  status: number;
 }
 
 const columns: RecordType[] = [
   {
     title: '类型',
-    dataIndex: 'type',
-    key: 'type',
+    dataIndex: 'typeName',
+    key: 'typeName',
   },
   {
     title: '品牌名称',
@@ -127,6 +138,7 @@ const columns: RecordType[] = [
     title: '状态',
     key: 'status',
     dataIndex: 'status',
+    slots: { customRender: 'status' },
   },
   {
     title: '操作',
@@ -152,43 +164,66 @@ export default defineComponent({
     Row,
     Col,
     Button,
+    Input,
   },
 
   setup() {
     // 数据流
-    const { getState, getActions } = mapStore('settingsBasicTagRule');
-    const { searchCondition, tableData } = getState([
+    const { getState, getMutations, getActions } = mapStore(
+      'settingsBasicTagRule'
+    );
+    const {
+      searchCondition,
+      originTagPage,
+      loading,
+      loadingAction,
+      actionItem,
+    } = getState([
       'searchCondition',
-      'tableData',
+      'originTagPage',
+      'loading',
+      'loadingAction',
+      'actionItem',
     ]);
-    const { fetchBasicTagRuleList } = getActions(['fetchBasicTagRuleList']);
+    const { save } = getMutations(['save']);
+    const { fetchOriginTagPage, fetchAction } = getActions([
+      'fetchOriginTagPage',
+      'fetchAction',
+    ]);
     // 组件数据
     const state: StateType = reactive({
       visible: false,
     });
     //表格方法
     const tableAction = reactive({
-      handleStatus(id: number, status: number) {
-        console.log(id, status);
+      handleStatus(record: OriginTagInfo) {
+        const { id, status } = record;
         confirm({
           title: '是否启用/禁用该原厂标签规则！',
           icon: createVNode(ExclamationCircleOutlined),
-          onOk() {
-            return new Promise((resolve, reject) => {
-              setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-            }).catch(() => console.log('Oops errors!'));
+          async onOk() {
+            const isAction = await fetchAction({
+              id,
+              status: 1 ^ status,
+            });
+            if (!isAction) return false;
+            await fetchOriginTagPage(searchCondition.value);
+            return true;
           },
         });
       },
-      edit() {
-        console.log('edit');
+      edit(record: OriginTagInfo) {
+        const { id, typeName, brandName, status } = record;
+        save({ actionItem: { id, typeName, brandName, status } });
+        state.visible = true;
       },
     });
 
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchBasicTagRuleList(searchCondition.value);
+      searchCondition.value.pageSize = pagination.pageSize;
+      fetchOriginTagPage(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
@@ -197,12 +232,20 @@ export default defineComponent({
 
     // 表单
     const modelRef: ModelRefType = reactive({
-      type: null,
+      id: null,
+      typeName: null,
       brandName: null,
+      status: 1,
+    });
+
+    watchEffect(() => {
+      if (actionItem.value) {
+        Object.assign(modelRef, actionItem.value);
+      }
     });
 
     const validatorBrandName = async (rule: any, value: any) => {
-      const operable = modelRef.type === 1;
+      const operable = modelRef.typeName === '品牌';
       if (!operable) {
         return Promise.resolve();
       }
@@ -213,11 +256,11 @@ export default defineComponent({
     };
 
     const rulesRef = reactive({
-      type: [
+      typeName: [
         {
           required: true,
           message: '类型不能为空！',
-          type: 'number',
+          type: 'string',
         },
       ],
       brandName: [
@@ -232,8 +275,8 @@ export default defineComponent({
       rulesRef
     );
 
-    const handleTypeChange = (value: number) => {
-      if (value === 0) {
+    const handleTypeChange = (value: string) => {
+      if (value === '通用') {
         validate('brandName');
         modelRef.brandName = null;
       }
@@ -241,35 +284,47 @@ export default defineComponent({
 
     // 处理标签规则创建
     const handleSubmitAddRule = () => {
-      validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
-        })
-        .catch((err) => {
-          console.log('error', err);
-        });
+      validate().then(async () => {
+        const params = toRaw(modelRef);
+        if (!params.brandName) params.brandName = '-';
+        const isCreate = await fetchAction(params);
+        if (isCreate) {
+          resetFields();
+          state.visible = false;
+          fetchOriginTagPage(searchCondition.value);
+        }
+      });
+    };
+
+    const handleCancel = () => {
+      if (actionItem) save({ actionItem: undefined });
+      resetFields();
     };
 
     // 生命周期
     onMounted(() => {
-      fetchBasicTagRuleList();
+      fetchOriginTagPage(searchCondition.value);
     });
 
     return {
       ...toRefs(state),
       columns,
-      tableData,
+      originTagPage,
       searchCondition,
       handlePagination,
       tableAction,
       handleTableChange,
       handleSubmitAddRule,
       modelRef,
-      resetFields,
       validateInfos,
       handleTypeChange,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      loading,
+      loadingAction,
+      ACTIVE_DICT,
+      findDict,
+      handleCancel,
     };
   },
 });

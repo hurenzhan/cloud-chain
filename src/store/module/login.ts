@@ -1,16 +1,15 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-import { getToken } from '@/libs/utils'
+import { setToken, setUserInfo } from '@/libs/utils'
 import { loginDispatch } from '@/service/login'
+import { UserInfoType } from '@/types/userInfo'
 
 interface InitStateType {
-  token: string | null;
-  userInfo: object;
+  userInfo: UserInfoType;
   loading: boolean;
 }
 
 const defaultState: InitStateType = {
-  token: getToken(),
   userInfo: {},
   loading: false
 }
@@ -23,26 +22,25 @@ export default {
   mutations: {
     save(state: InitStateType, payload: RecordType) {
       Object.assign(state, payload)
-    }
+    },
   },
   getters: {
   },
   actions: {
-    // 登录
-    async handleLogin({ commit }, payload: any) {
-      const res = await loginDispatch.use('login', payload)
-      console.log(res, 'login');
-
-    },
-    // 注册
-    fetchRegister({ commit }, payload: any) {
-      return loginDispatch.use('register', payload)
-    },
-    // // 退出登录
-    // handleLogOut() {
-    // },
-    // // 获取用户相关信息
-    // getUserInfo() {
-    // }
+    // 密码登录
+    async fetchLogin({ state }, payload: any) {
+      state.loading = true
+      const url = payload.password ? 'loginPassword' : 'loginCaptcha'
+      const [err, res] = await loginDispatch.use(url, payload)
+      if (err) {
+        state.loading = false
+        return false
+      }
+      state.userInfo = res?.data
+      setToken(state.userInfo.token)
+      setUserInfo(state.userInfo)
+      state.loading = false
+      return true
+    }
   }
 } as Module<any, any>

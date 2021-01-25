@@ -3,18 +3,18 @@
     <Row>
       <Col>
         <Form>
-          <FormItem v-bind="validateInfos.phone">
+          <FormItem v-bind="validateInfos.phoneNo">
             <TextInput
-              v-model:value="modelRef.phone"
-              @blur="validate('phone', { trigger: 'blur' }).catch(() => {})"
+              v-model:value="modelRef.phoneNo"
+              @blur="validate('phoneNo', { trigger: 'blur' }).catch(() => {})"
               placeholder="请输入手机号"
             />
           </FormItem>
-          <FormItem v-bind="validateInfos.verificationCode">
+          <FormItem v-bind="validateInfos.captcha">
             <VerificationCodeInput
-              v-model:value="modelRef.verificationCode"
+              v-model:value="modelRef.captcha"
               @blur="
-                validate('verificationCode', {
+                validate('captcha', {
                   trigger: 'blur',
                 }).catch(() => {})
               "
@@ -23,30 +23,37 @@
             />
           </FormItem>
           <FormItem>
-            <SubmitButton size="large" type="primary" @click="onSubmit"
+            <SubmitButton
+              size="large"
+              type="primary"
+              @click="onSubmit"
+              :loading="loading"
               >登录</SubmitButton
             >
           </FormItem>
-        </Form></Col
-      >
+        </Form>
+      </Col>
     </Row>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRaw } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import { Row, Col, Form } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import TextInput from './TextInput.vue';
 import VerificationCodeInput from './VerificationCodeInput.vue';
 import SubmitButton from './SubmitButton.vue';
 import { regs } from '@/libs/utils';
+import { fetchCaptcha } from '@/service/login';
+import mapStore from '@/libs/mapStore';
+import { useRouter } from 'vue-router';
 
 const { Item: FormItem } = Form;
 
 interface StateType {
-  phone: number | null;
-  verificationCode: number | null;
+  phoneNo: number | null;
+  captcha: number | null;
 }
 
 export default defineComponent({
@@ -63,14 +70,18 @@ export default defineComponent({
   },
 
   setup() {
+    // 数据流
+    const { getState, getActions } = mapStore('login');
+    const { loading } = getState(['loading']);
+    const { fetchLogin } = getActions(['fetchLogin']);
+    // 组件数据
     const modelRef: StateType = reactive({
-      phone: null,
-      verificationCode: null,
-      isErrPhone: false,
+      phoneNo: null,
+      captcha: null,
     });
-
+    const router = useRouter();
     const rulesRef = reactive({
-      phone: [
+      phoneNo: [
         {
           required: true,
           message: '手机号不能为空',
@@ -81,7 +92,7 @@ export default defineComponent({
           message: '请输入正确的手机格式',
         },
       ],
-      verificationCode: [
+      captcha: [
         {
           required: true,
           message: '验证码不能为空',
@@ -93,30 +104,33 @@ export default defineComponent({
 
     const onSubmit = (e: Event) => {
       e.preventDefault();
-      validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
-        })
-        .catch((err) => {
-          console.log('error', err);
+      validate().then(async () => {
+        const isLogin = fetchLogin({
+          ...modelRef,
         });
+        if (isLogin) router.push('/home');
+      });
     };
 
     const checkPhone = async () => {
-      return new Promise((resolve, reject) => {
-        validate('phone')
+      return new Promise((resolve) => {
+        validate('phoneNo')
           .then(() => {
             resolve(true);
           })
-          .catch((err) => {
-            reject(err);
+          .catch(() => {
+            resolve(false);
           });
       });
     };
 
     const getVerificationCode = async () => {
-      const isPhoneFormat = await checkPhone();
-      return isPhoneFormat;
+      if (await checkPhone()) {
+        const { phoneNo } = modelRef;
+        const [err] = await fetchCaptcha({ phoneNo });
+        return !err;
+      }
+      return false;
     };
 
     return {
@@ -125,6 +139,7 @@ export default defineComponent({
       modelRef,
       onSubmit,
       getVerificationCode,
+      loading,
     };
   },
 });

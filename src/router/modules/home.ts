@@ -1,6 +1,6 @@
 import { Component } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-import tagSet from './tagSet'
+import tagSetting from './tagSetting'
 import settings from './settings'
 import navigate from './navigate'
 
@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
         component: Home,
         children: [
             ...navigate,
-            ...tagSet,
+            ...tagSetting,
             ...settings
         ]
     },

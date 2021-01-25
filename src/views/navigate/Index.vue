@@ -2,7 +2,7 @@
   <div class="navigate__content">
     <Layout>
       <NavHeader />
-      <Layout class="ln-mt-40">
+      <Layout v-if="activeTagItem" class="ln-mt-40">
         <Sider>
           <Menu v-model:selectedKeys="selectedKeys" mode="vertical">
             <MenuItem key="tag">
@@ -34,6 +34,7 @@ import { useRoute, RouteLocationNormalizedLoaded } from 'vue-router';
 import NavHeader from '@/components/NavHeader.vue';
 import { Layout, Menu } from 'ant-design-vue';
 import { TagsOutlined } from '@ant-design/icons-vue';
+import mapStore from '@/libs/mapStore';
 const { Header, Content, Sider } = Layout;
 const { Item: MenuItem } = Menu;
 
@@ -55,12 +56,19 @@ export default defineComponent({
     TagsOutlined,
   },
   setup() {
+    // 数据流
+    const { getState } = mapStore('navigate');
+    const { activeTagItem } = getState(['activeTagItem']);
+
+    // 组件数据
     const state = reactive<State>({
       routerConfig: useRoute(),
       selectedKeys: ['tag'],
     });
+
     return {
       ...toRefs(state),
+      activeTagItem,
     };
   },
 });

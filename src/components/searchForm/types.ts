@@ -13,8 +13,8 @@ export interface FormItemType {
 }
 
 export interface ItemOptionsType {
-  initialValue: any;
-  rules: object | object[];
+  initialValue?: any;
+  rules?: object | object[];
 }
 
 export type SearchFunction = (modelRef: RecordType) => void;

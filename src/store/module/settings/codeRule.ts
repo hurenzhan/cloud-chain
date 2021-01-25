@@ -1,11 +1,7 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { loginDispatch } from '@/service/login'
-
-interface TableData {
-  total: number;
-  pageInfo: any[];
-}
+import { CodeRulePage } from '@/types/codeRule'
+import { codeRuleDispatch } from '@/service/index'
 
 interface SearchConditionType {
   pageNo: number;
@@ -14,7 +10,10 @@ interface SearchConditionType {
 
 interface InitStateType {
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  codeRuleData: CodeRulePage | {};
+  loading: boolean;
+  loadingAction: boolean;
+  actionItem: undefined;
 }
 
 const defaultState: InitStateType = {
@@ -22,35 +21,10 @@ const defaultState: InitStateType = {
     pageNo: 1,
     pageSize: 10
   },
-  tableData: {
-    total: 35,
-    pageInfo: [
-      {
-        id: '1',
-        ruleName: 1,
-        prefix: 1,
-        date: 1,
-        order: 1,
-        serialNumber: 1,
-        serialNumberLength: 1,
-        randomCode: 1,
-        randomCodeLength: 1,
-        status: 1,
-      },
-      {
-        id: '2',
-        ruleName: 2,
-        prefix: 2,
-        date: 2,
-        order: 2,
-        serialNumber: 2,
-        serialNumberLength: 2,
-        randomCode: 2,
-        randomCodeLength: 2,
-        status: 2,
-      },
-    ]
-  },
+  codeRuleData: {},
+  loading: false,
+  loadingAction: false,
+  actionItem: undefined
 }
 
 export default {
@@ -58,14 +32,26 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitStateType, payload: RecordType) {
-      // Object.assign(state, payload)
+      Object.assign(state, { ...payload })
     }
   },
   getters: {
   },
   actions: {
-    fetchCodeRuleList({ state }, payload) {
-      console.log(state, payload);
+    async fetchCodeRuleList({ state }, payload) {
+      state.loading = true
+      const [err, res] = await codeRuleDispatch.use('page', payload)
+      if (err) return state.loading = false
+      state.codeRuleData = res.data
+      state.loading = false
+    },
+    async fetchCodeRuleAction({ state }, payload) {
+      state.loadingAction = true
+      const actionType = payload.id ? 'update' : 'create'
+      const [err] = await codeRuleDispatch.use(actionType, payload)
+      if (err) return state.loadingAction = false
+      state.loadingAction = false
+      return true
     }
   }
 } as Module<any, any>

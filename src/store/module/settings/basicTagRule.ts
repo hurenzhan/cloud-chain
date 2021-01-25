@@ -1,11 +1,7 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { loginDispatch } from '@/service/login'
-
-interface TableData {
-  total: number;
-  pageInfo: any[];
-}
+import { OriginTagPage } from '@/types/originTag';
+import { originTagDispatch } from '@/service';
 
 interface SearchConditionType {
   pageNo: number;
@@ -14,7 +10,10 @@ interface SearchConditionType {
 
 interface InitStateType {
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  originTagPage: OriginTagPage | {};
+  loading: boolean;
+  loadingAction: boolean;
+  actionItem: undefined;
 }
 
 const defaultState: InitStateType = {
@@ -22,23 +21,10 @@ const defaultState: InitStateType = {
     pageNo: 1,
     pageSize: 10
   },
-  tableData: {
-    total: 35,
-    pageInfo: [
-      {
-        id: '1',
-        type: '1',
-        brandName: '品牌1',
-        status: '1',
-      },
-      {
-        id: '2',
-        type: '2',
-        brandName: '品牌2',
-        status: '2',
-      },
-    ]
-  },
+  originTagPage: {},
+  loading: false,
+  loadingAction: false,
+  actionItem: undefined
 }
 
 export default {
@@ -46,14 +32,26 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitStateType, payload: RecordType) {
-      // Object.assign(state, payload)
+      Object.assign(state, payload)
     }
   },
   getters: {
   },
   actions: {
-    fetchBasicTagRuleList({ state }, payload) {
-      console.log(payload);
+    async fetchOriginTagPage({ state }, payload) {
+      state.loading = true
+      const [err, res] = await originTagDispatch.use('page', payload)
+      if (err) return state.loading = false
+      state.originTagPage = res.data
+      state.loading = false
+    },
+    async fetchAction({ state }, payload) {
+      state.loadingAction = true
+      const actionType = payload.id ? 'update' : 'create'
+      const [err] = await originTagDispatch.use(actionType, payload)
+      if (err) return state.loadingAction = false
+      state.loadingAction = false
+      return true
     }
   }
 } as Module<any, any>

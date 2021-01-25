@@ -1,11 +1,8 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { loginDispatch } from '@/service/login'
-
-interface TableData {
-  total: number;
-  pageInfo: any[];
-}
+import { UserPageDispatch, roleInfoDispatch } from '@/service/index';
+import { RoleList } from '@/types/roleInfo';
+import { UserPage } from '@/types/user';
 
 interface SearchConditionType {
   pageNo: number;
@@ -14,7 +11,10 @@ interface SearchConditionType {
 
 interface InitStateType {
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  UserPageData: UserPage | {};
+  loading: boolean;
+  loadingAction: boolean;
+  roleList: RoleList;
 }
 
 const defaultState: InitStateType = {
@@ -22,25 +22,10 @@ const defaultState: InitStateType = {
     pageNo: 1,
     pageSize: 10
   },
-  tableData: {
-    total: 35,
-    pageInfo: [
-      {
-        id: '1',
-        name: '1',
-        phone: '1',
-        role: '1',
-        status: '1',
-      },
-      {
-        id: '2',
-        name: '2',
-        phone: '2',
-        role: '2',
-        status: '2',
-      },
-    ]
-  },
+  UserPageData: {},
+  loading: false,
+  loadingAction: false,
+  roleList: []
 }
 
 export default {
@@ -48,14 +33,31 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitStateType, payload: RecordType) {
-      // Object.assign(state, payload)
+      Object.assign(state, payload)
     }
   },
   getters: {
   },
   actions: {
-    fetchUserList({ state }, payload) {
-      console.log(payload);
+    async fetchUserList({ state }, payload) {
+      state.loading = true
+      const [err, res] = await UserPageDispatch.use('page', payload)
+      if (err) return state.loading = false
+      state.UserPageData = res.data
+      state.loading = false
+    },
+    async fetchUserAction({ state }, payload) {
+      state.loadingAction = true
+      const [err] = await UserPageDispatch.use('modify', payload)
+      if (err) return state.loadingAction = false
+      state.loadingAction = false
+      return true
+    },
+    async fetchRoleInfo({ state }, payload) {
+      const [err, res] = await roleInfoDispatch.use('list', payload)
+      if (err) return
+      state.roleList = res.data
+      return true
     }
   }
 } as Module<any, any>

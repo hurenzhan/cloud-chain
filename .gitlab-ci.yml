@@ -1,0 +1,28 @@
+
+stages:
+  - build
+  - run
+
+ctag-build:
+  stage: build
+  script:
+    - npm i eslint-plugin-vue@^7.0.0-0 && npm install --only=prod --progress=true
+    - npm run build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - dist
+
+# unit test:
+#   stage: test
+#   script:
+#     - npm install --progress=false
+#     - npm run unit
+
+ctag-run:
+  stage: run
+  script:
+    - docker stop app || true && docker rm app || true
+    - docker rmi app-image:latest || true
+    - docker build -t app-image:latest .
+    - docker run --name app -p 8338:80 -d --restart always app-image

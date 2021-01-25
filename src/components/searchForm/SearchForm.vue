@@ -33,7 +33,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRaw, PropType } from 'vue';
+import {
+  defineComponent,
+  reactive,
+  ref,
+  toRaw,
+  PropType,
+  watchEffect,
+} from 'vue';
 import { Form, Button, Row, Col, Space } from 'ant-design-vue';
 import { RecordType } from '@/types/common';
 import {
@@ -99,27 +106,34 @@ export default defineComponent({
 
     // 初始化
     const initModel = (formData: FormItemType[]) => {
-      formData.forEach((item: FormItemType) => {
+      if (!formData?.length) return;
+      formData?.forEach((item: FormItemType) => {
         const initialValue = item?.options?.initialValue;
         modelRef[item.key] = initialValue || null;
       });
+      // 删除无效key
+      const newKeys = formData.map((item) => item.key);
+      for (const key in modelRef) {
+        if (!newKeys.includes(key)) {
+          delete modelRef[key];
+        }
+      }
     };
-    initModel(props.formData);
-
+    // 提交表单
     const submitForm = () => {
-      formRef.value
-        .validate()
-        .then(() => {
-          props.onSearch && props.onSearch(toRaw(modelRef));
-        })
-        .catch((error: any) => {
-          console.log('error', error);
-        });
+      formRef.value.validate().then(() => {
+        props.onSearch && props.onSearch(toRaw(modelRef));
+      });
     };
+    // 重置表单
     const resetForm = () => {
       formRef.value.resetFields();
       props.onReset && props.onReset(toRaw(modelRef));
     };
+
+    watchEffect(() => {
+      initModel(props.formData);
+    });
 
     return {
       formRef,
@@ -137,6 +151,7 @@ export default defineComponent({
 <style lang="less" scoped>
 @import '~@/styles/utils';
 .search-form__content {
+  width: 100%;
   .ant-form-item {
     display: flex;
     .ant-form-item-control {

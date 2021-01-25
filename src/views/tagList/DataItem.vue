@@ -8,7 +8,7 @@
           </Button>
         </Col>
         <Col>
-          <Button type="link" @click="visible = true">+ 添加数据项</Button>
+          <Button type="link" @click="handleAdd">+ 添加数据项</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
@@ -17,22 +17,43 @@
             rowKey="id"
             :columns="columns"
             @change="handleTableChange"
-            :data-source="tableData.pageInfo"
+            :data-source="tagDataItemPage.pageInfo"
+            :loading="loading"
             :pagination="{
               current: searchCondition.pageNo,
               pageSize: searchCondition.pageSize,
               change: handlePagination,
-              total: tableData.total,
-              showTotal: () => `共 ${tableData.total} 条`,
+              total: tagDataItemPage.total,
+              showTotal: () => `共 ${tagDataItemPage.total} 条`,
               showSizeChanger: true,
               showQuickJumper: true,
             }"
           >
+            <template #isPrimaryKey="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #isEdit="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #isRequired="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #isItemReceipt="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #isItemDetail="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #status="{ text }">
+              <span :class="`active-status-${text}`">{{
+                findDict(ACTIVE_DICT, text)
+              }}</span>
+            </template>
             <template #action="{ record }">
               <Space :size="8">
-                <a @click="tableAction.edit"> 编辑 </a>
-                <a @click="tableAction.handleStatus(record.id, record.status)">
-                  {{ record.status ? '启用' : '禁用' }}
+                <a @click="tableAction.edit(record)"> 编辑 </a>
+                <a @click="tableAction.handleStatus(record)">
+                  {{ record.status ? '禁用' : '启用' }}
                 </a>
               </Space>
             </template>
@@ -40,18 +61,21 @@
         </Col>
       </Row>
     </Space>
-    <ModalAddItem v-model:visible="visible" />
+    <ModalAddItem ref="modelRef" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted } from 'vue';
+import { defineComponent, reactive, onMounted, ref } from 'vue';
 import { Row, Col, Button, Table, Space } from 'ant-design-vue';
 import { LeftOutlined } from '@ant-design/icons-vue';
 import mapStore from '@/libs/mapStore';
-import { pageBack } from '@/libs/utils';
+import { pageBack, findDict } from '@/libs/utils';
 import { RecordType } from '@/types/common';
 import ModalAddItem from './components/ModalAddItem.vue';
+import { TagDataItemInfo } from '@/types/tagDataItem';
+import { IS_DICT, ACTIVE_DICT } from '@/libs/dicts';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 
 interface StateType {
   visible: boolean;
@@ -69,60 +93,44 @@ const columns: RecordType[] = [
   },
   {
     title: '数据项名称',
-    dataIndex: 'dataItemName',
-    key: 'dataItemName',
+    dataIndex: 'name',
+    key: 'name',
+  },
+  {
+    title: '是否是主键',
+    dataIndex: 'isPrimaryKey',
+    key: 'isPrimaryKey',
+    slots: { customRender: 'isPrimaryKey' },
   },
   {
     title: '允许编辑',
-    dataIndex: 'edit',
-    key: 'edit',
-    slots: { customRender: 'edit' },
+    dataIndex: 'isEdit',
+    key: 'isEdit',
+    slots: { customRender: 'isEdit' },
   },
   {
     title: '必填',
-    dataIndex: 'required',
-    key: 'required',
-    slots: { customRender: 'required' },
-  },
-  {
-    title: '字段类型',
-    dataIndex: 'keyType',
-    key: 'keyType',
+    dataIndex: 'isRequired',
+    key: 'isRequired',
+    slots: { customRender: 'isRequired' },
   },
   {
     title: '是否单据项',
-    dataIndex: 'invoicesItem',
-    key: 'invoicesItem',
-    slots: { customRender: 'invoicesItem' },
+    dataIndex: 'isItemReceipt',
+    key: 'isItemReceipt',
+    slots: { customRender: 'isItemReceipt' },
   },
   {
     title: '是否明细项',
-    dataIndex: 'detailsItem',
-    key: 'detailsItem',
-    slots: { customRender: 'detailsItem' },
-  },
-  {
-    title: '是否标签项',
-    dataIndex: 'tagItem',
-    key: 'tagItem',
-    slots: { customRender: 'tagItem' },
-  },
-  {
-    title: '是否单据号',
-    dataIndex: 'invoicesCode',
-    key: 'invoicesCode',
-    slots: { customRender: 'invoicesCode' },
-  },
-  {
-    title: '原厂料号',
-    dataIndex: 'code',
-    key: 'code',
-    slots: { customRender: 'code' },
+    dataIndex: 'isItemDetail',
+    key: 'isItemDetail',
+    slots: { customRender: 'isItemDetail' },
   },
   {
     title: '状态',
     key: 'status',
     dataIndex: 'status',
+    slots: { customRender: 'status' },
   },
   {
     title: '操作',
@@ -145,46 +153,83 @@ export default defineComponent({
   },
 
   setup() {
+    const modelRef: any = ref(null);
+    const {
+      query: { tagId },
+    }: RouteLocationNormalizedLoaded = useRoute();
     // 数据流
-    const { getState, getActions } = mapStore('dataItem');
-    const { searchCondition, tableData } = getState([
+    const { getState, getMutations, getActions } = mapStore('dataItem');
+    const { searchCondition, tagDataItemPage, loading } = getState([
       'searchCondition',
-      'tableData',
+      'tagDataItemPage',
+      'loading',
+      'actionItem',
     ]);
-    const { fetchDataItemList } = getActions(['fetchDataItemList']);
-    // 组件数据
-    const state: StateType = reactive({
-      visible: false,
-    });
+    const { save } = getMutations(['save']);
+    const { fetchAction, fetchTagDataItemPage } = getActions([
+      'fetchAction',
+      'fetchTagDataItemPage',
+    ]);
+
+    searchCondition.value.tagId = tagId;
     //表格方法
     const tableAction = reactive({
-      edit() {
-        console.log('edit');
+      edit(record: TagDataItemInfo) {
+        const {
+          id,
+          name,
+          isPrimaryKey,
+          isEdit,
+          isRequired,
+          isItemReceipt,
+          isItemDetail,
+          status,
+        } = record;
+        save({
+          actionItem: {
+            id,
+            name,
+            isPrimaryKey,
+            isEdit,
+            isRequired,
+            isItemReceipt,
+            isItemDetail,
+            status,
+          },
+        });
+        modelRef.value.visible = true;
       },
-      handleStatus(id: number, status: number) {
-        console.log(id, status);
+      async handleStatus(record: TagDataItemInfo) {
+        const { id, status } = record;
+        await fetchAction({ id, status: 1 ^ status });
+        fetchTagDataItemPage(searchCondition.value);
       },
     });
 
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchDataItemList(searchCondition.value);
+      searchCondition.value.pageSize = pagination.pageSize;
+      fetchTagDataItemPage(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
       handlePagination(pagination);
     };
 
+    // 处理新增
+    const handleAdd = () => {
+      modelRef.value.visible = true;
+    };
+
     // 生命周期
     onMounted(() => {
-      fetchDataItemList();
+      fetchTagDataItemPage(searchCondition.value);
     });
 
     return {
-      ...toRefs(state),
       columns,
-      tableData,
+      tagDataItemPage,
       pageBack,
       searchCondition,
       handlePagination,
@@ -192,6 +237,12 @@ export default defineComponent({
       handleTableChange,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      handleAdd,
+      modelRef,
+      findDict,
+      IS_DICT,
+      ACTIVE_DICT,
+      loading,
     };
   },
 });

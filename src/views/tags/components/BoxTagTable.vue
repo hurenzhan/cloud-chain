@@ -15,6 +15,7 @@
         showQuickJumper: true,
       }"
     />
+    {{ activeKey }}
   </div>
 </template>
 
@@ -24,12 +25,12 @@ import { Table } from 'ant-design-vue';
 import mapStore from '@/libs/mapStore';
 import { pageBack } from '@/libs/utils';
 import { RecordType } from '@/types/common';
-import { SearchConditionType, TableData } from '@/store/module/tags/tagTab';
+import { SearchConditionType } from '@/store/module/tags/tagTab';
 
 interface StateType {
   visible: boolean;
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  tableData: any;
 }
 
 interface ModelRefType {
@@ -105,6 +106,7 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
+      activeKey,
       columns,
       pageBack,
       handlePagination,

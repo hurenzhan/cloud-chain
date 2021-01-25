@@ -1,6 +1,6 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { loginDispatch } from '@/service/login'
+import { labelDispatch } from '@/service/index'
 
 interface TableData {
     total: number;
@@ -15,6 +15,7 @@ interface SearchConditionType {
 interface InitStateType {
     searchCondition: SearchConditionType;
     tableData: TableData;
+    loading: boolean;
 }
 
 const defaultState: InitStateType = {
@@ -41,6 +42,7 @@ const defaultState: InitStateType = {
             },
         ]
     },
+    loading: false,
 }
 
 export default {
@@ -48,14 +50,18 @@ export default {
     state: defaultState,
     mutations: {
         save(state: InitStateType, payload: RecordType) {
-            // Object.assign(state, payload)
+            Object.assign(state, payload)
         }
     },
     getters: {
     },
     actions: {
-        fetchInvoicesList({ state }, payload) {
-            console.log(payload);
-        }
+        async fetchInvoicesList({ state }, payload) {
+            state.loading = true
+            const [err, res] = await labelDispatch.use('paginate', payload)
+            if (err) return state.loading = false
+            state.tableData = res.data
+            state.loading = false
+        },
     }
 } as Module<any, any>

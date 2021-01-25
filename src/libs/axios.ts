@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Canceler } from 'axios'
-// import { Spin } from 'iview'
 import publicConfig from '@/config'
-import { getToken } from './utils'
+import { getToken, LoginOut } from './utils'
 
 const CancelToken = axios.CancelToken
 
@@ -37,12 +36,16 @@ class HttpRequest {
 
   verifyStatus(res: AxiosResponse<any>) {
     const { code, message } = res.data
-    if (code !== 200) {
+    if (code) {
       notification.error({
         message: code,
         description: message,
       });
-      return false
+      if (code === 401) {
+        setTimeout(() => {
+          LoginOut()
+        }, 1000)
+      } else return false
     }
     return true
   }
@@ -54,7 +57,7 @@ class HttpRequest {
       (config: AxiosRequestConfig) => {
         const isPublic = publicConfig.publicPath.some((path: RegExp) => path.test(config.url || ''))
         const token = getToken()
-        if (!isPublic && token) config.headers.Authorization = 'Bearer ' + token
+        if (!isPublic && token) config.headers.Authorization = token
         const key = config.url + '&' + config.method
         this.removePending(key, true)
         config.cancelToken = new CancelToken((c: Canceler) => {
@@ -63,26 +66,26 @@ class HttpRequest {
         return config
       },
       (err) => {
-        return Promise.reject(err)
+        return Promise.resolve([err, null])
       }
     )
 
     // 响应请求的拦截器
     instance.interceptors.response.use(
-      (res) => {
+      (res): Promise<any> => {
         const key = res.config.url + '&' + res.config.method
         this.removePending(key)
         if (res.status === 200) {
           if (this.verifyStatus(res)) {
-            return Promise.resolve(res.data)
+            return Promise.resolve([null, res.data])
           }
-          return Promise.reject(res)
+          return Promise.resolve([res.data, null])
         } else {
-          return Promise.reject(res)
+          return Promise.resolve([res.data, null])
         }
       },
       (err) => {
-        return Promise.reject(err)
+        return Promise.resolve([err, null])
       }
     )
   }

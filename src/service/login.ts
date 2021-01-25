@@ -1,11 +1,12 @@
 import Dispatch from '@/libs/dispatch'
 import { axios } from '@/libs/request'
-import { AxiosPromise } from 'axios'
 
 export const loginDispatch = new Dispatch({
     register: ['/ctag/authenticate/register', 'post'],
+    loginPassword: ['/ctag/authenticate/login/password', 'post'],
+    loginCaptcha: ['/ctag/authenticate/login/captcha', 'post'],
 })
 
-export const fetchCaptcha = (data: Record<string, any>): AxiosPromise<any> => {
-    return axios.post('/ctag/authority/captcha', data)
+export const fetchCaptcha = (data: Record<string, any>): Promise<any> => {
+    return axios.post('/ctag/authenticate/captcha', data)
 }

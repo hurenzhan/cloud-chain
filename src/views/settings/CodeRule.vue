@@ -1,10 +1,10 @@
 <template>
-  <SettingsHeader> 编码规则 </SettingsHeader>
+  <SettingsHeader>编码规则</SettingsHeader>
   <Content>
     <Space direction="vertical" :size="20" class="ln-w-100">
       <Row type="flex" justify="end" align="middle">
         <Col>
-          <Button type="primary" @click="visible = true">新增</Button>
+          <Button type="primary" @click="handleAdd">新增</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
@@ -13,22 +13,43 @@
             rowKey="id"
             :columns="columns"
             @change="handleTableChange"
-            :data-source="tableData.pageInfo"
+            :data-source="codeRuleData.pageInfo"
+            :loading="loading"
             :pagination="{
               current: searchCondition.pageNo,
               pageSize: searchCondition.pageSize,
               change: handlePagination,
-              total: tableData.total,
-              showTotal: () => `共 ${tableData.total} 条`,
+              total: codeRuleData.total,
+              showTotal: () => `共 ${codeRuleData.total} 条`,
               showSizeChanger: true,
               showQuickJumper: true,
             }"
           >
+            <template #name="{ text }">
+              <span class="name-color">{{ text }}</span>
+            </template>
+            <template #hasDate="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #hasOrderId="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #hasSerialId="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #hasRandomId="{ text }">
+              {{ findDict(IS_DICT, text) }}
+            </template>
+            <template #status="{ text }">
+              <span :class="`active-status-${text}`">{{
+                findDict(ACTIVE_DICT, text)
+              }}</span>
+            </template>
             <template #action="{ record }">
               <Space :size="8">
-                <a @click="tableAction.edit"> 编辑 </a>
-                <a @click="tableAction.handleStatus(record.id, record.status)">
-                  {{ record.status ? '启用' : '禁用' }}
+                <a @click="tableAction.edit(record)"> 编辑 </a>
+                <a @click="tableAction.handleStatus(record)">
+                  {{ record.status ? '禁用' : '启用' }}
                 </a>
               </Space>
             </template>
@@ -36,34 +57,29 @@
         </Col>
       </Row>
     </Space>
+    <ModalAddRule ref="modelRef" />
   </Content>
-  <ModalAddRule v-model:visible="visible" />
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted } from 'vue';
+import { defineComponent, reactive, onMounted, ref } from 'vue';
 import { Row, Col, Button, Table, Space, Layout } from 'ant-design-vue';
 import mapStore from '@/libs/mapStore';
-import { pageBack } from '@/libs/utils';
+import { pageBack, findDict } from '@/libs/utils';
 import { RecordType } from '@/types/common';
 import SettingsHeader from './components/SettingsHeader.vue';
 import ModalAddRule from './components/ModalAddRule.vue';
-
-interface StateType {
-  visible: boolean;
-}
-
-interface ModelRefType {
-  name: string;
-}
+import { IS_DICT, ACTIVE_DICT } from '@/libs/dicts';
+import { CodeRuleInfo } from '@/types/codeRule';
 
 const { Content } = Layout;
 
 const columns: RecordType[] = [
   {
     title: '规则名称',
-    dataIndex: 'ruleName',
-    key: 'ruleName',
+    dataIndex: 'name',
+    key: 'name',
+    slots: { customRender: 'name' },
   },
   {
     title: '常量前缀',
@@ -72,42 +88,43 @@ const columns: RecordType[] = [
   },
   {
     title: '日期',
-    dataIndex: 'date',
-    key: 'date',
-    slots: { customRender: 'date' },
+    dataIndex: 'hasDate',
+    key: 'hasDate',
+    slots: { customRender: 'hasDate' },
   },
   {
     title: '单号',
-    dataIndex: 'order',
-    key: 'order',
-    slots: { customRender: 'order' },
+    dataIndex: 'hasOrderId',
+    key: 'hasOrderId',
+    slots: { customRender: 'hasOrderId' },
   },
   {
     title: '流水号',
-    dataIndex: 'serialNumber',
-    key: 'serialNumber',
-    slots: { customRender: 'serialNumber' },
+    dataIndex: 'hasSerialId',
+    key: 'hasSerialId',
+    slots: { customRender: 'hasSerialId' },
   },
   {
     title: '流水号长度',
-    dataIndex: 'serialNumberLength',
-    key: 'serialNumberLength',
+    dataIndex: 'serialIdSize',
+    key: 'serialIdSize',
   },
   {
     title: '随机码',
-    dataIndex: 'randomCode',
-    key: 'randomCode',
-    slots: { customRender: 'randomCode' },
+    dataIndex: 'hasRandomId',
+    key: 'hasRandomId',
+    slots: { customRender: 'hasRandomId' },
   },
   {
     title: '随机码长度',
-    dataIndex: 'randomCodeLength',
-    key: 'randomCode',
+    dataIndex: 'randomIdSize',
+    key: 'randomIdSize',
   },
   {
     title: '状态',
     key: 'status',
     dataIndex: 'status',
+    slots: { customRender: 'status' },
   },
   {
     title: '操作',
@@ -127,34 +144,41 @@ export default defineComponent({
     Space,
     ModalAddRule,
     Content,
-    SettingsHeader
+    SettingsHeader,
   },
 
   setup() {
+    const modelRef: any = ref(null);
     // 数据流
-    const { getState, getActions } = mapStore('settingsCodeRule');
-    const { searchCondition, tableData } = getState([
+    const { getState, getMutations, getActions } = mapStore('settingsCodeRule');
+    const { searchCondition, codeRuleData, loading } = getState([
       'searchCondition',
-      'tableData',
+      'codeRuleData',
+      'loading',
     ]);
-    const { fetchCodeRuleList } = getActions(['fetchCodeRuleList']);
-    // 组件数据
-    const state: StateType = reactive({
-      visible: false,
-    });
+    const { save } = getMutations(['save']);
+    const { fetchCodeRuleList, fetchCodeRuleAction } = getActions([
+      'fetchCodeRuleList',
+      'fetchCodeRuleAction',
+    ]);
+
     //表格方法
     const tableAction = reactive({
-      edit() {
-        console.log('edit');
+      edit(record: CodeRuleInfo) {
+        save({ actionItem: record });
+        modelRef.value.visible = true;
       },
-      handleStatus(id: number, status: number) {
-        console.log(id, status);
+      async handleStatus(record: CodeRuleInfo) {
+        const { id, status } = record;
+        await fetchCodeRuleAction({ id, status: 1 ^ status });
+        fetchCodeRuleList(searchCondition.value);
       },
     });
 
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
+      searchCondition.value.pageSize = pagination.pageSize;
       fetchCodeRuleList(searchCondition.value);
     };
     // 表格操作
@@ -162,15 +186,19 @@ export default defineComponent({
       handlePagination(pagination);
     };
 
+    // 处理新增
+    const handleAdd = () => {
+      modelRef.value.visible = true;
+    };
     // 生命周期
     onMounted(() => {
-      fetchCodeRuleList();
+      fetchCodeRuleList(searchCondition.value);
     });
 
     return {
-      ...toRefs(state),
       columns,
-      tableData,
+      codeRuleData,
+      loading,
       pageBack,
       searchCondition,
       handlePagination,
@@ -178,6 +206,11 @@ export default defineComponent({
       handleTableChange,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      modelRef,
+      handleAdd,
+      findDict,
+      IS_DICT,
+      ACTIVE_DICT,
     };
   },
 });
@@ -185,8 +218,7 @@ export default defineComponent({
 
 <style lang="less" scoped>
 @import '~@/styles/utils';
-.tag-list__content {
-  padding: 50px;
-  background: @white;
+.name-color {
+  color: @primary-color;
 }
 </style>

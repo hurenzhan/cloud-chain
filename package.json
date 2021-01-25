@@ -1,5 +1,5 @@
 {
-  "name": "cloud-chain",
+  "name": "cloud-tag",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "ant-design-vue": "^2.0.0-rc.5",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
+    "lodash": "^4.17.20",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"
@@ -34,15 +35,7 @@
   },
   "description": "## Project setup ``` npm install ```",
   "main": ".eslintrc.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hurenzhan/cloud-chain.git"
-  },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hurenzhan/cloud-chain/issues"
-  },
-  "homepage": "https://github.com/hurenzhan/cloud-chain#readme"
+  "license": "ISC"
 }

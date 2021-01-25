@@ -12,7 +12,6 @@ import { RecordType } from '@/types/common'
 // } from '@/api/user'
 // import { login } from '@/api/login'
 import { getToken } from '@/libs/utils'
-import { testDispatch } from '@/service/common'
 
 interface InitStateType {
   token: string | null;
@@ -33,17 +32,16 @@ export default {
     }
   },
   getters: {
-    loginTestGetters: (state: InitStateType) => {
+    loginTestGetters(state: InitStateType) {
       console.log(state.token);
-
       return state.token
     },
   },
-  actions: {
+  // actions: {
     // 登录
-    async handleLogin({ commit, state, rootState }, loginInfo: any) {
-      const a: RecordType = await testDispatch.use('get')
-      commit('save', { a: a.message })
+    // async handleLogin({ commit, state, rootState }, loginInfo: any) {
+    //   const a: RecordType = await testDispatch.use('get')
+    //   commit('save', { a: a.message })
 
       // return new Promise((resolve, reject) => {
       //   login({
@@ -66,14 +64,14 @@ export default {
       //       reject(err)
       //     })
       // })
-    },
+    // },
     // // 退出登录
     // handleLogOut({ state, commit }) {
     // },
     // // 获取用户相关信息
     // getUserInfo({ state, commit }) {
     // }
-  }
+  // }
 } as Module<any, any>
 
 // export default store

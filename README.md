@@ -1,4 +1,4 @@
-# cloud-chain
+# cloud-tag
 
 ## Project setup
 ```

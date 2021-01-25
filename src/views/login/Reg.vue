@@ -16,18 +16,29 @@
           placeholder="请输入用户名"
         />
       </FormItem>
-      <FormItem v-bind="validateInfos.newPwd">
-        <PassInput
-          v-model:value="modelRef.newPwd"
-          @blur="validate('newPwd', { trigger: 'blur' }).catch(() => {})"
-          placeholder="请输入密码"
-          autocomplete="off"
+      <FormItem v-bind="validateInfos.enterpriseName">
+        <TextInput
+          v-model:value="modelRef.enterpriseName"
+          @blur="
+            validate('enterpriseName', { trigger: 'blur' }).catch(() => {})
+          "
+          placeholder="请输入企业名称"
         />
       </FormItem>
       <FormItem v-bind="validateInfos.password">
         <PassInput
           v-model:value="modelRef.password"
           @blur="validate('password', { trigger: 'blur' }).catch(() => {})"
+          placeholder="请输入密码"
+          autocomplete="off"
+        />
+      </FormItem>
+      <FormItem v-bind="validateInfos.confirmPassword">
+        <PassInput
+          v-model:value="modelRef.confirmPassword"
+          @blur="
+            validate('confirmPassword', { trigger: 'blur' }).catch(() => {})
+          "
           placeholder="请确认密码"
           autocomplete="off"
         />
@@ -50,9 +61,9 @@
         >
       </FormItem>
     </Form>
-    <Button type="link" class="ln-p-0"
-      ><router-link to="/login">账号密码登录</router-link></Button
-    >
+    <Button type="link" class="ln-p-0">
+      <router-link to="/login">账号密码登录</router-link>
+    </Button>
   </div>
 </template>
 
@@ -68,14 +79,16 @@ import { regs } from '@/libs/utils';
 import { RecordType } from '@/types/common';
 import { fetchCaptcha, loginDispatch } from '@/service/login';
 import { useRouter } from 'vue-router';
+import { RSA } from '@/libs/rsa.js';
 
 const { Item: FormItem } = Form;
 
 interface StateType {
   phoneNo: string;
   name: string | number;
-  newPwd: string | number;
+  enterpriseName: string | number;
   password: string | number;
+  confirmPassword: string | number;
   captcha: number | null;
 }
 
@@ -97,14 +110,15 @@ export default defineComponent({
     const modelRef: StateType = reactive({
       phoneNo: '',
       name: '',
-      newPwd: '',
+      enterpriseName: '',
       password: '',
+      confirmPassword: '',
       captcha: null,
     });
     const router = useRouter();
 
     const validatePass = async (rule: RecordType, value: any) => {
-      if (modelRef.newPwd !== value) {
+      if (modelRef.password !== value) {
         return Promise.reject('两次输入密码不一致');
       }
       return Promise.resolve();
@@ -128,13 +142,19 @@ export default defineComponent({
           message: '用户名不能为空',
         },
       ],
-      newPwd: [
+      enterpriseName: [
+        {
+          required: true,
+          message: '企业名称不能为空',
+        },
+      ],
+      password: [
         {
           required: true,
           message: '密码不能为空',
         },
       ],
-      password: [
+      confirmPassword: [
         {
           required: true,
           message: '确认密码不能为空',
@@ -156,20 +176,23 @@ export default defineComponent({
 
     const onSubmit = (e: Event) => {
       e.preventDefault();
-      validate()
-        .then(async () => {
-          loginDispatch.use('register', { ...modelRef }).then(() => {
-            notification.success({
-              message: '注册成功',
-            });
-            router.push('/login');
-          });
-        })
-        .catch((err) => {
-          console.log('error', err);
+      validate().then(async () => {
+        const [err] = await loginDispatch.use('register', {
+          phoneNo: modelRef.phoneNo,
+          name: modelRef.name,
+          enterpriseName: modelRef.enterpriseName,
+          password: RSA.encrypt(modelRef.password),
+          captcha: modelRef.captcha,
+          status: 1,
         });
+        if (!err) {
+          notification.success({
+            message: '注册成功',
+          });
+          router.push('/login');
+        }
+      });
     };
-
     const checkPhone = async () => {
       return new Promise((resolve) => {
         validate('phoneNo')
@@ -185,8 +208,8 @@ export default defineComponent({
     const getVerificationCode = async () => {
       if (await checkPhone()) {
         const { phoneNo } = modelRef;
-        fetchCaptcha({ phoneNo });
-        return true;
+        const [err] = await fetchCaptcha({ phoneNo });
+        return !err;
       }
       return false;
     };

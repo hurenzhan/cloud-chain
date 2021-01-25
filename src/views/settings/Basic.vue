@@ -5,24 +5,24 @@
       <div class="info__item">
         <h1 class="info__item-label">企业名称</h1>
       </div>
-      <Input :value="basicInfo.name" size="large" disabled />
+      <Input :value="basicInfo && basicInfo.name" size="large" disabled />
       <div class="info__item">
         <h1 class="info__item-label">数据来源</h1>
-        <Group name="radioGroup" :value="basicInfo.dataSources">
+        <Group name="radioGroup" value="Excel" disabled>
           <Radio value="Excel"> Excel </Radio>
           <Radio value="ERP"> ERP </Radio>
         </Group>
       </div>
       <div class="info__item">
         <h1 class="info__item-label">原厂标签数据收集</h1>
-        <Group name="radioGroup" :value="basicInfo.labelCollection">
+        <Group name="radioGroup" :value="0" disabled>
           <Radio :value="0"> 否 </Radio>
           <Radio :value="1"> 是 </Radio>
         </Group>
       </div>
       <div class="info__item">
         <h1 class="info__item-label">原厂标签数据核对</h1>
-        <Group name="radioGroup" :value="basicInfo.labelVerify">
+        <Group name="radioGroup" :value="0" disabled>
           <Radio :value="0"> 否 </Radio>
           <Radio :value="1"> 是 </Radio>
         </Group>
@@ -60,11 +60,13 @@ export default defineComponent({
 
     // 生命周期
     onMounted(() => {
+      console.log(basicInfo, 'basicInfo');
+      
       fetchBasicInfo();
     });
 
     return {
-      basicInfo,
+      basicInfo: basicInfo,
     };
   },
 });

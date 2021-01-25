@@ -16,6 +16,7 @@
       </router-view>
     </Content>
   </Layout>
+  {{ routerConfig.beforeRouteEnter }}
 </template>
 
 <script lang="ts">
@@ -43,7 +44,7 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      console.log(112);
+      console.log('home');
     });
 
     return {

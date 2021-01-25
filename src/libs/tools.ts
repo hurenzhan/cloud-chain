@@ -18,7 +18,7 @@ export const forEach = (arr: string | any[], fn: (arg0: any, arg1: number, arg2:
 export const getIntersection = <T>(arr1: Array<T>, arr2: Array<T>): Array<T> => {
   const len = Math.min(arr1.length, arr2.length)
   let i = -1
-  const res = []
+  const res: Array<T> = []
   while (++i < len) {
     const item = arr2[i]
     if (arr1.indexOf(item) > -1) res.push(item)

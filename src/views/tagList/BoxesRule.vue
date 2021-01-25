@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-list__content">
+  <div class="boxes-rule__content">
     <Space direction="vertical" :size="20" class="ln-w-100">
       <Row type="flex" justify="space-between" align="middle">
         <Col
@@ -8,31 +8,37 @@
           </Button>
         </Col>
         <Col>
-          <Button type="primary" @click="visible = true">新增</Button>
+          <Button type="primary" @click="handleAdd">新增</Button>
         </Col>
       </Row>
       <Row class="ln-w-100">
         <Col span="24">
           <Table
             rowKey="id"
+            :loading="loading"
             :columns="columns"
             @change="handleTableChange"
-            :data-source="tableData.pageInfo"
+            :data-source="packageRulePageData.pageInfo"
             :pagination="{
               current: searchCondition.pageNo,
               pageSize: searchCondition.pageSize,
               change: handlePagination,
-              total: tableData.total,
-              showTotal: () => `共 ${tableData.total} 条`,
+              total: packageRulePageData.total,
+              showTotal: () => `共 ${packageRulePageData.total} 条`,
               showSizeChanger: true,
               showQuickJumper: true,
             }"
           >
+            <template #status="{ text }">
+              <span :class="`active-status-${text}`">{{
+                findDict(ACTIVE_DICT, text)
+              }}</span>
+            </template>
             <template #action="{ record }">
               <Space :size="8">
-                <a @click="tableAction.edit"> 编辑 </a>
-                <a @click="tableAction.handleStatus(record.id, record.status)">
-                  {{ record.status ? '启用' : '禁用' }}
+                <a @click="tableAction.edit(record)"> 编辑 </a>
+                <a @click="tableAction.handleStatus(record)">
+                  {{ record.status ? '禁用' : '启用' }}
                 </a>
               </Space>
             </template>
@@ -40,23 +46,21 @@
         </Col>
       </Row>
     </Space>
-    <ModalBoxesRule v-model:visible="visible" />
+    <ModalBoxesRule ref="modelRef" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted } from 'vue';
+import { defineComponent, reactive, onMounted, ref } from 'vue';
 import { Row, Col, Button, Table, Space } from 'ant-design-vue';
 import { LeftOutlined } from '@ant-design/icons-vue';
 import mapStore from '@/libs/mapStore';
-import { pageBack } from '@/libs/utils';
+import { pageBack, findDict } from '@/libs/utils';
 import { RecordType } from '@/types/common';
 import ModalBoxesRule from './components/ModalBoxesRule.vue';
-
-interface StateType {
-  editingKey: string;
-  visible: boolean;
-}
+import { PackageRuleInfo } from '@/types/tagPackage';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
+import { ACTIVE_DICT } from '@/libs/dicts';
 
 interface ModelRefType {
   name: string;
@@ -70,15 +74,15 @@ const columns: RecordType[] = [
   },
   {
     title: '规则名称',
-    dataIndex: 'ruleName',
-    key: 'ruleName',
+    dataIndex: 'name',
+    key: 'name',
   },
   {
     title: '装箱条件',
-    dataIndex: 'boxesRule',
-    key: 'boxesRule',
+    dataIndex: 'tagItemNameStr',
+    key: 'tagItemNameStr',
   },
-   {
+  {
     title: '状态',
     key: 'status',
     dataIndex: 'status',
@@ -105,47 +109,82 @@ export default defineComponent({
   },
 
   setup() {
+    const {
+      query: { tagId },
+    }: RouteLocationNormalizedLoaded = useRoute();
+    const modelRef: any = ref(null);
     // 数据流
-    const { getState, getActions } = mapStore('boxesRule');
-    const { searchCondition, tableData } = getState([
+    const { getState, getMutations, getActions } = mapStore('boxesRule');
+    const { searchCondition, packageRulePageData, loading } = getState([
       'searchCondition',
-      'tableData',
+      'packageRulePageData',
+      'loading',
+      'actionItem',
     ]);
-    const { fetchBoxesRuleList } = getActions(['fetchBoxesRuleList']);
-    // 组件数据
-    const state: StateType = reactive({
-      editingKey: '',
-      visible: false,
-    });
+    const { save } = getMutations(['save']);
+    const {
+      fetchPackageRulePage,
+      fetchAction,
+      fetchPackageCodeRulePage,
+      fetchTagDataItemList,
+    } = getActions([
+      'fetchPackageRulePage',
+      'fetchAction',
+      'fetchPackageCodeRulePage',
+      'fetchTagDataItemList',
+    ]);
+
+    searchCondition.value.tagId = tagId;
+
     //表格方法
     const tableAction = reactive({
-      edit() {
-        console.log('edit');
+      edit(record: PackageRuleInfo) {
+        const { id, name, packageRuleId, tagItemIdStr } = record;
+        save({
+          actionItem: {
+            id,
+            name,
+            packageRuleId,
+            tagItemIdList: tagItemIdStr?.split(',').map((key) => +key),
+          },
+        });
+        modelRef.value.visible = true;
       },
-      handleStatus(id: number, status: number) {
-        console.log(id, status);
+      async handleStatus(record: PackageRuleInfo) {
+        const { id, status } = record;
+        console.log(id, 'id');
+
+        await fetchAction({ id, status: 1 ^ status });
+        fetchPackageRulePage(searchCondition.value);
       },
     });
 
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
-      fetchBoxesRuleList(searchCondition.value);
+      searchCondition.value.pageSize = pagination.pageSize;
+      fetchPackageRulePage(searchCondition.value);
     };
     // 表格操作
     const handleTableChange = (pagination: RecordType) => {
       handlePagination(pagination);
     };
 
+    // 处理新增
+    const handleAdd = () => {
+      modelRef.value.visible = true;
+    };
+
     // 生命周期
     onMounted(() => {
-      fetchBoxesRuleList();
+      fetchPackageRulePage(searchCondition.value);
+      fetchPackageCodeRulePage();
+      fetchTagDataItemList({ tagId });
     });
 
     return {
-      ...toRefs(state),
       columns,
-      tableData,
+      packageRulePageData,
       pageBack,
       searchCondition,
       handlePagination,
@@ -153,6 +192,11 @@ export default defineComponent({
       handleTableChange,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      loading,
+      modelRef,
+      handleAdd,
+      findDict,
+      ACTIVE_DICT,
     };
   },
 });
@@ -160,7 +204,7 @@ export default defineComponent({
 
 <style lang="less" scoped>
 @import '~@/styles/utils';
-.tag-list__content {
+.boxes-rule__content {
   padding: 50px;
   background: @white;
 }

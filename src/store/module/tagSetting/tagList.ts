@@ -1,12 +1,7 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
-// import { getToken } from '@/libs/utils'
-// import { loginDispatch } from '@/service/login'
-
-interface TableData {
-  total: number;
-  pageInfo: any[];
-}
+import { tagPackageDispatch } from '@/service'
+import { TagPage } from '@/types/tagPackage'
 
 interface SearchConditionType {
   pageNo: number;
@@ -15,7 +10,10 @@ interface SearchConditionType {
 
 interface InitStateType {
   searchCondition: SearchConditionType;
-  tableData: TableData;
+  tagPageData: TagPage | {};
+  loading: boolean;
+  loadingAction: boolean;
+  actionItem: undefined;
 }
 
 const defaultState: InitStateType = {
@@ -23,32 +21,10 @@ const defaultState: InitStateType = {
     pageNo: 1,
     pageSize: 10
   },
-  tableData: {
-    total: 35,
-    pageInfo: [
-      {
-        id: '1',
-        tagName: 'John Brown',
-        createTime: 32,
-        createName: 'New York No. 1 Lake Park',
-        status: '启用',
-      },
-      {
-        id: '12',
-        tagName: 'John Brown',
-        createTime: 32,
-        createName: 'New York No. 1 Lake Park',
-        status: '启用',
-      },
-      {
-        id: '13',
-        tagName: 'John Brown',
-        createTime: 32,
-        createName: 'New York No. 1 Lake Park',
-        status: '启用',
-      },
-    ]
-  }
+  tagPageData: {},
+  loading: false,
+  loadingAction: false,
+  actionItem: undefined
 }
 
 export default {
@@ -56,14 +32,26 @@ export default {
   state: defaultState,
   mutations: {
     save(state: InitStateType, payload: RecordType) {
-      // Object.assign(state, payload)
+      Object.assign(state, payload)
     }
   },
   getters: {
   },
   actions: {
-    fetchTagList({ commit }, payload) {
-      commit('save', { searchCondition: payload })
+    async fetchTagPage({ state }, payload) {
+      state.loading = true
+      const [err, res] = await tagPackageDispatch.use('tagPage', payload)
+      if (err) return state.loading = false
+      state.tagPageData = res.data
+      state.loading = false
+    },
+    async fetchAction({ state }, payload) {
+      state.loadingAction = true
+      const actionType = payload.id ? 'update' : 'createTag'
+      const [err] = await tagPackageDispatch.use(actionType, payload)
+      if (err) return state.loadingAction = false
+      state.loadingAction = false
+      return true
     }
   }
 } as Module<any, any>

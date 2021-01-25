@@ -3,25 +3,34 @@
   <Content>
     <Table
       rowKey="id"
+      :loading="loading"
       :columns="columns"
       @change="handleTableChange"
-      :data-source="tableData.pageInfo"
+      :data-source="UserPageData.pageInfo"
       :pagination="{
         current: searchCondition.pageNo,
         pageSize: searchCondition.pageSize,
         change: handlePagination,
-        total: tableData.total,
-        showTotal: () => `共 ${tableData.total} 条`,
+        total: UserPageData.total,
+        showTotal: () => `共 ${UserPageData.total} 条`,
         showSizeChanger: true,
         showQuickJumper: true,
       }"
     >
+      <template #roleId="{ text }">
+        {{ findDict(IDENTITY_DICT, text) }}
+      </template>
+      <template #status="{ text }">
+        <span :class="`active-status-${text}`">{{
+          findDict(ACTIVE_DICT, text)
+        }}</span>
+      </template>
       <template #action="{ record }">
         <Space :size="8">
-          <a @click="tableAction.handleStatus(record.id, record.status)">
-            {{ record.status ? '启用' : '禁用' }}
+          <a @click="tableAction.handleStatus(record)">
+            {{ record.status ? '禁用' : '启用' }}
           </a>
-          <a @click="tableAction.handleAuthor"> 授权 </a>
+          <a @click="tableAction.handleAuthor(record)"> 授权 </a>
         </Space>
       </template>
     </Table>
@@ -35,8 +44,12 @@
     <Form :label-col="labelCol" :wrapper-col="wrapperCol">
       <FormItem label="角色名" :="validateInfos.name">
         <Select v-model:value="modelRef.name" placeholder="请选择">
-          <Option :value="1">{{ 1 }}</Option>
-          <Option :value="2">{{ 2 }}</Option>
+          <Option
+            v-for="{ name, parentRoleId } in roleList"
+            :key="parentRoleId"
+            :value="parentRoleId"
+            >{{ name }}</Option
+          >
         </Select>
       </FormItem>
     </Form>
@@ -56,9 +69,11 @@ import { Layout, Table, Space, Modal, Form, Select } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import SettingsHeader from './components/SettingsHeader.vue';
 import mapStore from '@/libs/mapStore';
-import { pageBack } from '@/libs/utils';
+import { pageBack, findDict } from '@/libs/utils';
 import { RecordType } from '@/types/common';
+import { UserInfo } from '@/types/user';
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
+import { ACTIVE_DICT, IDENTITY_DICT } from '@/libs/dicts';
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -81,18 +96,20 @@ const columns: RecordType[] = [
   },
   {
     title: '手机',
-    dataIndex: 'phone',
-    key: 'phone',
+    dataIndex: 'phoneNo',
+    key: 'phoneNo',
   },
   {
     title: '角色',
-    dataIndex: 'role',
-    key: 'role',
+    dataIndex: 'roleId',
+    key: 'roleId',
+    slots: { customRender: 'roleId' },
   },
   {
     title: '状态',
     key: 'status',
     dataIndex: 'status',
+    slots: { customRender: 'status' },
   },
   {
     title: '操作',
@@ -119,30 +136,42 @@ export default defineComponent({
   setup() {
     // 数据流
     const { getState, getActions } = mapStore('settingsUser');
-    const { searchCondition, tableData } = getState([
+    const { searchCondition, UserPageData, loading, roleList } = getState([
       'searchCondition',
-      'tableData',
+      'UserPageData',
+      'loading',
+      'roleList',
     ]);
-    const { fetchUserList } = getActions(['fetchUserList']);
+    const { fetchUserList, fetchUserAction, fetchRoleInfo } = getActions([
+      'fetchUserList',
+      'fetchUserAction',
+      'fetchRoleInfo',
+    ]);
     // 组件数据
     const state: StateType = reactive({
       visibleAuthor: false,
     });
     //表格方法
     const tableAction = reactive({
-      handleStatus(id: number, status: number) {
-        console.log(id, status);
+      handleStatus(record: UserInfo) {
+        const { id: userId, status } = record;
         confirm({
           title: '是否启用该成员？',
           icon: createVNode(ExclamationCircleOutlined),
-          onOk() {
-            return new Promise((resolve, reject) => {
-              setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-            }).catch(() => console.log('Oops errors!'));
+          async onOk() {
+            const isAction = await fetchUserAction({
+              userId,
+              enabled: 1 ^ status,
+            });
+            if (!isAction) return false;
+            await fetchUserList(searchCondition.value);
+            return true;
           },
         });
       },
-      handleAuthor() {
+      handleAuthor(record: any) {
+        const { roleId: id, name } = record;
+        fetchRoleInfo({ id, name });
         state.visibleAuthor = true;
       },
     });
@@ -150,6 +179,7 @@ export default defineComponent({
     // 处理分页
     const handlePagination = (pagination: RecordType) => {
       searchCondition.value.pageNo = pagination.current;
+      searchCondition.value.pageSize = pagination.pageSize;
       fetchUserList(searchCondition.value);
     };
     // 表格操作
@@ -177,24 +207,20 @@ export default defineComponent({
 
     // 处理标签创建
     const handleSubmitAuthor = () => {
-      validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
-        })
-        .catch((err) => {
-          console.log('error', err);
-        });
+      validate().then(() => {
+        console.log(toRaw(modelRef));
+      });
     };
 
     // 生命周期
     onMounted(() => {
-      fetchUserList();
+      fetchUserList(searchCondition.value);
     });
 
     return {
       ...toRefs(state),
       columns,
-      tableData,
+      UserPageData,
       pageBack,
       searchCondition,
       handlePagination,
@@ -206,6 +232,11 @@ export default defineComponent({
       validateInfos,
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },
+      findDict,
+      ACTIVE_DICT,
+      IDENTITY_DICT,
+      loading,
+      roleList,
     };
   },
 });

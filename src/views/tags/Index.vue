@@ -27,15 +27,5 @@ export default defineComponent({
     InvoicesList,
     TagList,
   },
-  //   setup() {},
 });
 </script>
-
-<style lang="less" scoped>
-// @import '~@/styles/utils';
-// .ant-layout-content {
-//   background: @white;
-//   padding: 0 50px;
-// }
-//
-</style>

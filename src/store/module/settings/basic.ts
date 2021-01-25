@@ -1,5 +1,6 @@
 import { Module } from 'vuex'
 import { RecordType } from '@/types/common'
+import { getUserInfo } from '@/libs/utils';
 // import { loginDispatch } from '@/service/login'
 
 interface BasicInfoType {
@@ -10,16 +11,11 @@ interface BasicInfoType {
 }
 
 interface InitStateType {
-    basicInfo: BasicInfoType;
+    basicInfo: BasicInfoType | null;
 }
 
 const defaultState: InitStateType = {
-    basicInfo: {
-        name: '测试公司',
-        dataSources: 'Excel',
-        labelCollection: 0,
-        labelVerify: 0,
-    }
+    basicInfo: null,
 }
 
 export default {
@@ -34,7 +30,7 @@ export default {
     },
     actions: {
         fetchBasicInfo({ state }, payload) {
-            console.log(payload);
+            state.basicInfo = getUserInfo()
         }
     }
 } as Module<any, any>

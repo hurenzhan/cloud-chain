@@ -3,46 +3,55 @@
     <Row>
       <Col>
         <Form>
-          <FormItem v-bind="validateInfos.phone">
+          <FormItem v-bind="validateInfos.phoneNo">
             <TextInput
-              v-model:value="modelRef.phone"
-              @blur="validate('phone', { trigger: 'blur' }).catch(() => {})"
+              v-model:value="modelRef.phoneNo"
+              @blur="validate('phoneNo', { trigger: 'blur' }).catch(() => {})"
               placeholder="请输入手机号"
             />
           </FormItem>
-          <FormItem v-bind="validateInfos.pass">
+          <FormItem v-bind="validateInfos.password">
             <PassInput
-              v-model:value="modelRef.pass"
-              @blur="validate('pass', { trigger: 'blur' }).catch(() => {})"
+              v-model:value="modelRef.password"
+              @blur="validate('password', { trigger: 'blur' }).catch(() => {})"
+              @keyup.enter.prevent="onSubmit"
               placeholder="请输入密码"
               autocomplete="off"
             />
           </FormItem>
           <FormItem>
-            <SubmitButton size="large" type="primary" @click="onSubmit"
-              >登录</SubmitButton
+            <SubmitButton
+              size="large"
+              type="primary"
+              @click="onSubmit"
+              :loading="loading"
             >
+              登录
+            </SubmitButton>
           </FormItem>
-        </Form></Col
-      >
+        </Form>
+      </Col>
     </Row>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRaw } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import { Row, Col, Form } from 'ant-design-vue';
 import { useForm } from '@ant-design-vue/use';
 import PassInput from './PassInput.vue';
 import TextInput from './TextInput.vue';
 import SubmitButton from './SubmitButton.vue';
+import mapStore from '@/libs/mapStore';
 import { regs } from '@/libs/utils';
+import { RSA } from '@/libs/rsa.js';
+import { useRouter } from 'vue-router';
 
 const { Item: FormItem } = Form;
 
 interface StateType {
-  phone: number | null;
-  pass: string | number;
+  phoneNo: string;
+  password: string | number;
 }
 
 export default defineComponent({
@@ -57,12 +66,18 @@ export default defineComponent({
     SubmitButton,
   },
   setup() {
+    // 数据流
+    const { getState, getActions } = mapStore('login');
+    const { loading } = getState(['loading']);
+    const { fetchLogin } = getActions(['fetchLogin']);
+    // 组件数据
     const modelRef: StateType = reactive({
-      phone: null,
-      pass: '',
+      phoneNo: '',
+      password: '',
     });
+    const router = useRouter();
     const rulesRef = reactive({
-      phone: [
+      phoneNo: [
         {
           required: true,
           message: '手机号不能为空',
@@ -73,7 +88,7 @@ export default defineComponent({
           message: '请输入正确的手机格式',
         },
       ],
-      pass: [
+      password: [
         {
           required: true,
           message: '密码不能为空',
@@ -83,13 +98,13 @@ export default defineComponent({
     const { validate, validateInfos } = useForm(modelRef, rulesRef);
     const onSubmit = (e: Event) => {
       e.preventDefault();
-      validate()
-        .then(() => {
-          console.log(toRaw(modelRef));
-        })
-        .catch((err) => {
-          console.log('error', err);
+      validate().then(async () => {
+        const isLogin = await fetchLogin({
+          ...modelRef,
+          password: RSA.encrypt(modelRef.password),
         });
+        if (isLogin) router.push('/home');
+      });
     };
 
     return {
@@ -97,6 +112,7 @@ export default defineComponent({
       validateInfos,
       modelRef,
       onSubmit,
+      loading,
     };
   },
 });

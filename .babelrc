@@ -1,13 +1,24 @@
 {
   "plugins": [
-    ["import", {
-      "libraryName": "ant-design-vue",
-      "libraryDirectory": "es",
-      "style": true
-    }]
+    [
+      "import",
+      {
+        "libraryName": "ant-design-vue",
+        "libraryDirectory": "es",
+        "style": true
+      }
+    ]
   ],
-  "extends": ["plugin:vue/vue3-recommended"],
+  "extends": [
+    "plugin:vue/vue3-recommended"
+  ],
   "rules": {
-    "vue/no-multiple-template-root": "off"
+    "vue/no-multiple-template-root": "off",
+    "vue/no-parsing-error": [
+      2,
+      {
+        "x-invalid-end-tag": false
+      }
+    ]
   }
 }
